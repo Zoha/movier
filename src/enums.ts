@@ -42,16 +42,6 @@ export enum TitleMainType {
   SeriesEpisode = "seriesEpisode",
 }
 
-export enum TitleSubType {
-  Anime = "anime",
-  ShortFilm = "shortFilm",
-  MiniSeries = "miniSeries",
-  TvSeries = "tvSeries",
-  Documentary = "documentary",
-  MusicVideo = "musicVideo",
-  TvSpecial = "tvSpecial",
-}
-
 export enum Language {
   Persian = "persian",
   English = "english",
