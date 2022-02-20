@@ -5,16 +5,19 @@ import cheerio from "cheerio";
 import { IMDB_BASE_URL, IMDB_TITLE_SEARCH_URL } from "./constants";
 
 export async function findTitleWithName(
-  name: string,
+  queryName: string,
   {
     exactMatch,
     specificType,
   }: { exactMatch?: boolean; specificType?: TitleMainType } = {}
 ): Promise<FoundedTitleDetails[]> {
-  name = name.toLocaleLowerCase();
+  queryName = queryName.toLocaleLowerCase();
   // in feature we can add more sources for finding titles
   // for now we just using imdb searcher
-  const imdbResult = await searchForTitleInIMDBWithName(name, !!exactMatch);
+  const imdbResult = await searchForTitleInIMDBWithName(
+    queryName,
+    !!exactMatch
+  );
 
   // do sort and filters
   const finalResult = imdbResult
