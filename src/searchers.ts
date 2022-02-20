@@ -11,7 +11,7 @@ export async function findTitleWithName(
     specificType,
   }: { exactMatch?: boolean; specificType?: TitleMainType } = {}
 ): Promise<FoundedTitleDetails[]> {
-  queryName = queryName.toLocaleLowerCase();
+  queryName = queryName.toLowerCase();
   // in feature we can add more sources for finding titles
   // for now we just using imdb searcher
   const imdbResult = await searchForTitleInIMDBWithName(
