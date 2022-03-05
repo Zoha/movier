@@ -1,65 +1,66 @@
 import { Genre, Source, WriterRole, TitleMainType, Language } from "./enums";
 
-export interface Title {
+export interface ITitle {
   detailsLang: Language;
-  mainSource: SourceDetails;
-  allSources?: SourceDetails[];
+  mainSource: ISourceDetails;
+  allSources: ISourceDetails[];
   name: string;
-  localName: string;
+  worldWideName: string;
   otherNames: string[];
   titleYear: number;
-  genres: Genre;
-  directors: PersonDetails[];
-  writers: WriterDetails[];
+  genres: Genre[];
+  directors: IPersonDetails[];
+  writers: IWriterDetails[];
   mainType: TitleMainType;
   plot: string;
-  casts: CastDetails[];
-  producers: ProducerDetails[];
-  mainRateSource: SourceDetails;
-  mainRate: RatesDetails;
-  allRates: RatesDetails[];
-  dates: DatesDetails;
+  casts: ICastDetails[];
+  producers: IProducerDetails[];
+  mainRateSource: ISourceDetails;
+  mainRate: IRatesDetails;
+  allRates: IRatesDetails[];
+  dates: IDatesDetails;
   ageCategoryTitle: string;
   languages: string[];
   countries: string[];
-  boxOffice: BoxOfficeDetails;
+  boxOffice: IBoxOfficeDetails;
   productionCompanies: string[];
   filmingLocations: string[];
   mainImage: string;
-  allImages: ImageDetails;
-  otherLangs: Title[];
+  allImages: IImageDetails;
+  otherLangs: ITitle[];
 }
 
-interface SourceDetails {
+export interface ISourceDetails {
   sourceId: string;
   sourceType: Source;
   sourceUrl: string;
 }
 
-interface PersonDetails {
+export interface IPersonDetails {
+  source?: ISourceDetails;
   name: string;
   otherNames: string[];
 }
 
-interface WriterDetails extends PersonDetails {
+export interface IWriterDetails extends IPersonDetails {
   role?: WriterRole;
 }
 
-interface CastDetails extends PersonDetails {
+export interface ICastDetails extends IPersonDetails {
   roles: string;
 }
 
-interface ProducerDetails extends PersonDetails {
+export interface IProducerDetails extends IPersonDetails {
   title: string;
 }
 
-interface RatesDetails {
+export interface IRatesDetails {
   rateSource: Source;
   rate: number;
   votesCount: number;
 }
 
-interface DatesDetails {
+export interface IDatesDetails {
   titleYear: number;
   startYear: number;
   endYear: number;
@@ -67,7 +68,7 @@ interface DatesDetails {
   endDate: Date;
 }
 
-interface BoxOfficeDetails {
+export interface IBoxOfficeDetails {
   budget: number;
   worldwide: number;
   crossMainCountries: {
@@ -81,7 +82,7 @@ interface BoxOfficeDetails {
   };
 }
 
-interface ImageDetails {
+export interface IImageDetails {
   title: string;
   sourceType: Source;
   url: string;
@@ -90,10 +91,10 @@ interface ImageDetails {
     width: number;
     height: number;
   };
-  thumbnails: ImageDetails[];
+  thumbnails: IImageDetails[];
 }
 
-export interface FoundedTitleDetails {
+export interface IFoundedTitleDetails {
   source: Source;
   name: string;
   titleYear: number;
@@ -102,4 +103,8 @@ export interface FoundedTitleDetails {
   titleType: TitleMainType;
   matchScore: number;
   thumbnailImage: string;
+}
+
+export interface ITitleDetailsResolver {
+  getDetails(): Promise<ITitle | undefined>;
 }

@@ -1,5 +1,5 @@
 import { Source, TitleMainType } from "./enums";
-import { FoundedTitleDetails } from "./interfaces";
+import { IFoundedTitleDetails } from "./interfaces";
 import axios from "axios";
 import cheerio from "cheerio";
 import { IMDB_BASE_URL, IMDB_TITLE_SEARCH_URL } from "./constants";
@@ -10,7 +10,7 @@ export async function findTitleWithName(
     exactMatch = false,
     specificType,
   }: { exactMatch?: boolean; specificType?: TitleMainType } = {}
-): Promise<FoundedTitleDetails[]> {
+): Promise<IFoundedTitleDetails[]> {
   queryName = queryName.toLowerCase();
   // in feature we can add more sources for finding titles
   // for now we just using imdb searcher
@@ -30,7 +30,7 @@ export async function findTitleWithName(
 async function searchForTitleInIMDBWithName(
   queryName: string,
   exactMatch = false
-): Promise<FoundedTitleDetails[]> {
+): Promise<IFoundedTitleDetails[]> {
   const nameExecDetails = /(.+)\s(\d{4})\s*$/.exec(queryName);
   let nameWithoutYear: string, requestedYear: number | null;
   nameWithoutYear = queryName;
@@ -53,7 +53,7 @@ async function searchForTitleInIMDBWithName(
 
   // parse page content for jquery like
   const $ = cheerio.load(IMDBPageResult.data);
-  const moviesList: FoundedTitleDetails[] = [];
+  const moviesList: IFoundedTitleDetails[] = [];
 
   // find rows of result (jquery like) and push it with proper format to result list
   $("table.findList")
