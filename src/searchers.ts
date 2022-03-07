@@ -2,7 +2,9 @@ import { Source, TitleMainType } from "./enums";
 import { IFoundedTitleDetails } from "./interfaces";
 import axios from "axios";
 import cheerio from "cheerio";
-import { IMDB_BASE_URL, IMDB_TITLE_SEARCH_URL } from "./constants";
+import { IMDB_TITLE_SEARCH_URL } from "./constants";
+import { convertIMDBPathToIMDBUrl } from "./utils/convertIMDBPathToIMDBUrl";
+import { formatHTMLText } from "./utils/formatHTMLText";
 
 export async function findTitleWithName(
   queryName: string,
@@ -63,16 +65,16 @@ async function searchForTitleInIMDBWithName(
       // exclude vars from result row
       const $this = $(this);
       const $movieTexts = $this.find("td:eq(1)");
-      const text = $movieTexts.text().toLowerCase();
-      const name = $movieTexts.find("a").text().toLowerCase();
-      const aka = /aka\s"(.+)"/.exec(text)?.[1] ?? "";
+      const text = formatHTMLText($movieTexts.text());
+      const name = formatHTMLText($movieTexts.find("a").text());
+      const aka = formatHTMLText(/aka\s"(.+)"/.exec(text)?.[1]);
       const titleType = /(.*episode.*)\s*$/i.test(text)
         ? TitleMainType.SeriesEpisode
         : /(.*series.*)\s*$/i.test(text)
         ? TitleMainType.Series
         : TitleMainType.Movie;
       const titleYear = Number(/(\d{4})/.exec(text)?.[1] || "");
-      const url = IMDB_BASE_URL + $movieTexts.find("a").attr("href") ?? "";
+      const url = convertIMDBPathToIMDBUrl($movieTexts.find("a").attr("href"));
 
       // calculate match score - for sorting results
       let matchScore = 0;
@@ -84,6 +86,9 @@ async function searchForTitleInIMDBWithName(
       }
       if (titleYear && requestedYear === titleYear) {
         matchScore += 4;
+      }
+      if ([TitleMainType.Movie, TitleMainType.Series].includes(titleType)) {
+        matchScore += 3;
       }
 
       // push to the final list

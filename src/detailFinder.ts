@@ -29,7 +29,9 @@ export async function findTitleDetails(
   // get details from resolver
   const result = await resolver.getDetails();
   if (!result) {
-    throw new Error("title resolver returned empty data");
+    throw new Error(
+      "there was a problem in getting title details, title resolver returned empty data"
+    );
   }
   return result;
 }

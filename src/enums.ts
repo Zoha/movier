@@ -30,12 +30,6 @@ export enum Genre {
   Western = "western",
 }
 
-export enum WriterRole {
-  Screenplay = "screenplay",
-  BookWriter = "bookWriter",
-  ComicWriter = "comicWriter",
-}
-
 export enum TitleMainType {
   Movie = "movie",
   Series = "series",

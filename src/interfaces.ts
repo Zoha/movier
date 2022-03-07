@@ -1,4 +1,4 @@
-import { Genre, Source, WriterRole, TitleMainType, Language } from "./enums";
+import { Genre, Source, TitleMainType, Language } from "./enums";
 
 export interface ITitle {
   detailsLang: Language;
@@ -10,23 +10,24 @@ export interface ITitle {
   titleYear: number;
   genres: Genre[];
   directors: IPersonDetails[];
-  writers: IWriterDetails[];
+  writers: IPersonDetails[];
   mainType: TitleMainType;
   plot: string;
   casts: ICastDetails[];
-  producers: IProducerDetails[];
-  mainRateSource: ISourceDetails;
-  mainRate: IRatesDetails;
-  allRates: IRatesDetails[];
+  producers: IPersonDetails[];
+  mainRate: IRateDetails;
+  allRates: IRateDetails[];
   dates: IDatesDetails;
+  allReleaseDates: IReleaseDateDetails[];
+  isEnded?: boolean;
   ageCategoryTitle: string;
   languages: string[];
-  countries: string[];
+  countriesOfOrigin: string[];
   boxOffice: IBoxOfficeDetails;
   productionCompanies: string[];
   filmingLocations: string[];
-  mainImage: string;
-  allImages: IImageDetails;
+  posterImage: IImageDetails;
+  allImages: IImageDetails[];
   otherLangs: ITitle[];
 }
 
@@ -39,33 +40,61 @@ export interface ISourceDetails {
 export interface IPersonDetails {
   source?: ISourceDetails;
   name: string;
-  otherNames: string[];
+  extraInfo?: string;
 }
 
-export interface IWriterDetails extends IPersonDetails {
-  role?: WriterRole;
+export interface IRoleDetails {
+  source?: ISourceDetails;
+  name: string;
 }
 
 export interface ICastDetails extends IPersonDetails {
-  roles: string;
+  roles: IRoleDetails[];
+  otherNames?: string[];
+  imageThumbnailUrl?: string;
 }
 
-export interface IProducerDetails extends IPersonDetails {
-  title: string;
-}
-
-export interface IRatesDetails {
-  rateSource: Source;
+export interface IRateAndVotesCount {
   rate: number;
   votesCount: number;
+}
+
+export interface IAgesRateAndVotesCount {
+  allAges?: IRateAndVotesCount;
+  under18?: IRateAndVotesCount;
+  between18And29?: IRateAndVotesCount;
+  between30And44?: IRateAndVotesCount;
+  over44?: IRateAndVotesCount;
+}
+
+export interface IRateDetailsForSpecificAge extends IRateAndVotesCount {
+  percent?: number;
+}
+
+export interface IRateDetails extends IRateAndVotesCount {
+  rateSource: Source;
+  assortedByGender?: {
+    allGenders?: IAgesRateAndVotesCount;
+    male?: IAgesRateAndVotesCount;
+    female?: IAgesRateAndVotesCount;
+  };
+  assortedByRate?: IRateDetailsForSpecificAge[];
 }
 
 export interface IDatesDetails {
   titleYear: number;
   startYear: number;
-  endYear: number;
+  startCountry: string;
+  startExtraInfo?: string;
+  endYear?: number;
   startDate: Date;
-  endDate: Date;
+  isEnded?: boolean;
+}
+
+export interface IReleaseDateDetails {
+  country: string;
+  date: Date;
+  extraInfo?: string;
 }
 
 export interface IBoxOfficeDetails {
@@ -87,11 +116,11 @@ export interface IImageDetails {
   sourceType: Source;
   url: string;
   isThumbnail: boolean;
-  size: {
+  size?: {
     width: number;
     height: number;
   };
-  thumbnails: IImageDetails[];
+  thumbnails?: IImageDetails[];
 }
 
 export interface IFoundedTitleDetails {
