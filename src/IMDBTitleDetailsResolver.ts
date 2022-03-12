@@ -1,4 +1,4 @@
-import cheerio, { Cheerio, CheerioAPI, Element } from "cheerio";
+import { load as loadCheerio, Cheerio, CheerioAPI, Element } from "cheerio";
 import axios from "axios";
 import { Genre, Language, Source, TitleMainType } from "./enums";
 import {
@@ -43,11 +43,11 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
 
   async getDetails(): Promise<ITitle | undefined> {
     await Promise.all([
-      // this.getMainPageHTMLData(),
-      // this.getReleaseInfoPageHTMLData(),
+      this.getMainPageHTMLData(),
+      this.getReleaseInfoPageHTMLData(),
       this.getFullCreditsPageHTMLData(),
-      // this.getRatingsPageHTMLData(),
-      // this.getCompanyCreditsPageHTMLDate(),
+      this.getRatingsPageHTMLData(),
+      this.getCompanyCreditsPageHTMLDate(),
     ]);
 
     return this.generateReturnDetailsData();
@@ -56,28 +56,28 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   async getMainPageHTMLData() {
     const apiResult = await axios.get(this.url);
     this.mainPageHTMLData = apiResult.data;
-    this.mainPageCheerio = cheerio.load(this.mainPageHTMLData);
+    this.mainPageCheerio = loadCheerio(this.mainPageHTMLData);
   }
 
   async getReleaseInfoPageHTMLData() {
     const releaseInfoPageUrl = this.addToPathOfUrl(this.url, "/releaseinfo");
     const apiResult = await axios.get(releaseInfoPageUrl);
     this.releaseInfoPageHTMLData = apiResult.data;
-    this.releaseInfoPageCheerio = cheerio.load(this.releaseInfoPageHTMLData);
+    this.releaseInfoPageCheerio = loadCheerio(this.releaseInfoPageHTMLData);
   }
 
   async getFullCreditsPageHTMLData() {
     const fullCreditsPageUrl = this.addToPathOfUrl(this.url, "/fullcredits");
     const apiResult = await axios.get(fullCreditsPageUrl);
     this.fullCreditsPageHTMLData = apiResult.data;
-    this.fullCreditsPageCheerio = cheerio.load(this.fullCreditsPageHTMLData);
+    this.fullCreditsPageCheerio = loadCheerio(this.fullCreditsPageHTMLData);
   }
 
   async getRatingsPageHTMLData() {
     const ratingsPageUrl = this.addToPathOfUrl(this.url, "/ratings");
     const apiResult = await axios.get(ratingsPageUrl);
     this.ratingsPageHTMLData = apiResult.data;
-    this.ratingsPageCheerio = cheerio.load(this.ratingsPageHTMLData);
+    this.ratingsPageCheerio = loadCheerio(this.ratingsPageHTMLData);
   }
 
   async getCompanyCreditsPageHTMLDate() {
@@ -87,9 +87,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     );
     const apiResult = await axios.get(companyCreditPageUrl);
     this.companyCreditPageHTMLData = apiResult.data;
-    this.companyCreditPageCheerio = cheerio.load(
-      this.companyCreditPageHTMLData
-    );
+    this.companyCreditPageCheerio = loadCheerio(this.companyCreditPageHTMLData);
   }
 
   addToPathOfUrl(originalPath: string, joinPath: string): string {
@@ -99,37 +97,36 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   generateReturnDetailsData() {
-    const res: Partial<ITitle> = {
-      // detailsLang: Language.English,
-      // mainSource: this.mainSourceDetails,
-      // allSources: this.allSources,
-      // name: this.name,
-      // worldWideName: this.worldWideName,
-      // otherNames: this.allUniqueNames,
-      // titleYear: this.titleYear,
-      // genres: this.genres,
-      // directors: this.directors,
-      // writers: this.writers,
-      // mainType: this.mainType,
-      // plot: this.plot,
+    const res: ITitle = {
+      detailsLang: Language.English,
+      mainSource: this.mainSourceDetails,
+      allSources: this.allSources,
+      name: this.name,
+      worldWideName: this.worldWideName,
+      otherNames: this.allUniqueNames,
+      titleYear: this.titleYear,
+      genres: this.genres,
+      directors: this.directors,
+      writers: this.writers,
+      mainType: this.mainType,
+      plot: this.plot,
       casts: this.cast,
-      // producers: this.producers,
-      // mainRate: this.mainRate,
-      // allRates: this.allRates,
-      // allReleaseDates: this.allReleaseDates,
-      // dates: this.dates,
-      // ageCategoryTitle: this.ageCategoryTitle,
-      // languages: this.languages,
-      // countriesOfOrigin: this.countriesOfOrigin,
-      // posterImage: this.posterImage,
-      // allImages: this.allImages,
-      // boxOffice: this.boxOffice,
-      // productionCompanies: this.productionCompanies,
-      // otherLangs: [],
+      producers: this.producers,
+      mainRate: this.mainRate,
+      allRates: this.allRates,
+      allReleaseDates: this.allReleaseDates,
+      dates: this.dates,
+      ageCategoryTitle: this.ageCategoryTitle,
+      languages: this.languages,
+      countriesOfOrigin: this.countriesOfOrigin,
+      posterImage: this.posterImage,
+      allImages: this.allImages,
+      boxOffice: this.boxOffice,
+      productionCompanies: this.productionCompanies,
+      otherLangs: [],
     };
 
-    console.log(JSON.stringify(res, null, 2));
-    return undefined;
+    return res;
   }
 
   extractIdFromUrl(fullUrl: string, idPrefix: string): string {

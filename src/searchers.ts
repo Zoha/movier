@@ -1,7 +1,7 @@
 import { Source, TitleMainType } from "./enums";
 import { IFoundedTitleDetails } from "./interfaces";
 import axios from "axios";
-import cheerio from "cheerio";
+import { load as cheerioLoad } from "cheerio";
 import { IMDB_TITLE_SEARCH_URL } from "./constants";
 import { convertIMDBPathToIMDBUrl } from "./utils/convertIMDBPathToIMDBUrl";
 import { formatHTMLText } from "./utils/formatHTMLText";
@@ -54,7 +54,7 @@ async function searchForTitleInIMDBWithName(
   });
 
   // parse page content for jquery like
-  const $ = cheerio.load(IMDBPageResult.data);
+  const $ = cheerioLoad(IMDBPageResult.data);
   const moviesList: IFoundedTitleDetails[] = [];
 
   // find rows of result (jquery like) and push it with proper format to result list
