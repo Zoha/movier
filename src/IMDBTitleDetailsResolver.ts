@@ -14,6 +14,8 @@ import {
   IDatesDetails,
   IReleaseDateDetails,
   IImageDetails,
+  IBoxOfficeDetails,
+  IProductionCompanyDetails,
 } from "./interfaces";
 import { camelCase } from "change-case";
 import { formatHTMLText } from "./utils/formatHTMLText";
@@ -26,12 +28,14 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private releaseInfoPageHTMLData!: string;
   private fullCreditsPageHTMLData!: string;
   private ratingsPageHTMLData!: string;
+  private companyCreditPageHTMLData!: string;
 
   // cheerio loaded instances
   private mainPageCheerio!: CheerioAPI;
   private releaseInfoPageCheerio!: CheerioAPI;
   private fullCreditsPageCheerio!: CheerioAPI;
   private ratingsPageCheerio!: CheerioAPI;
+  private companyCreditPageCheerio!: CheerioAPI;
 
   constructor(url: string) {
     this.url = url;
@@ -39,10 +43,11 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
 
   async getDetails(): Promise<ITitle | undefined> {
     await Promise.all([
-      this.getMainPageHTMLData(),
-      this.getReleaseInfoPageHTMLData(),
+      // this.getMainPageHTMLData(),
+      // this.getReleaseInfoPageHTMLData(),
       this.getFullCreditsPageHTMLData(),
-      this.getRatingsPageHTMLData(),
+      // this.getRatingsPageHTMLData(),
+      // this.getCompanyCreditsPageHTMLDate(),
     ]);
 
     return this.generateReturnDetailsData();
@@ -75,6 +80,18 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     this.ratingsPageCheerio = cheerio.load(this.ratingsPageHTMLData);
   }
 
+  async getCompanyCreditsPageHTMLDate() {
+    const companyCreditPageUrl = this.addToPathOfUrl(
+      this.url,
+      "/companycredits"
+    );
+    const apiResult = await axios.get(companyCreditPageUrl);
+    this.companyCreditPageHTMLData = apiResult.data;
+    this.companyCreditPageCheerio = cheerio.load(
+      this.companyCreditPageHTMLData
+    );
+  }
+
   addToPathOfUrl(originalPath: string, joinPath: string): string {
     const urlInstance = new URL(originalPath);
     urlInstance.pathname = urlInstance.pathname.replace(/\/$/, "") + joinPath;
@@ -87,7 +104,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       // mainSource: this.mainSourceDetails,
       // allSources: this.allSources,
       // name: this.name,
-      worldWideName: this.worldWideName,
+      // worldWideName: this.worldWideName,
       // otherNames: this.allUniqueNames,
       // titleYear: this.titleYear,
       // genres: this.genres,
@@ -95,22 +112,20 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       // writers: this.writers,
       // mainType: this.mainType,
       // plot: this.plot,
-      // casts: this.cast,
+      casts: this.cast,
       // producers: this.producers,
       // mainRate: this.mainRate,
       // allRates: this.allRates,
-      // isEnded: this.isEnded,
       // allReleaseDates: this.allReleaseDates,
       // dates: this.dates,
       // ageCategoryTitle: this.ageCategoryTitle,
       // languages: this.languages,
       // countriesOfOrigin: this.countriesOfOrigin,
-      posterImage: this.posterImage,
-      allImages: this.allImages,
-      // boxOffice: IBoxOfficeDetails;
-      // productionCompanies: string[];
-      // filmingLocations: string[];
-      // otherLangs: ITitle[];
+      // posterImage: this.posterImage,
+      // allImages: this.allImages,
+      // boxOffice: this.boxOffice,
+      // productionCompanies: this.productionCompanies,
+      // otherLangs: [],
     };
 
     console.log(JSON.stringify(res, null, 2));
@@ -201,8 +216,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   get genres(): Genre[] {
     const $ = this.mainPageCheerio;
     const originalIMDBGenres: string[] = [];
-    $("[data-testid=genres] a").each(function () {
-      originalIMDBGenres.push($(this).find("span").first()?.text?.() || "");
+    $("[data-testid='storyline-genres'] a").each(function () {
+      originalIMDBGenres.push($(this).text());
     });
 
     const genreEnumValues = Object.values(Genre);
@@ -257,6 +272,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
         }
         const el = $(this);
         if (el.find("td").length < 2) {
+          if (el.text().trim().length === 0) {
+            return;
+          }
           if (index > 0 && limitUntilFirstInvalidRow) {
             limitReached = true;
           }
@@ -330,6 +348,10 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
           .find("a")
           .each(function () {
             const aEl = $(this);
+            const isCharLink = /\/nm\d{4}/.test(aEl.attr("href") || "");
+            if (!isCharLink) {
+              return;
+            }
             roles.push({
               source: resolverInstance.extractSourceDetailsFromAElement(
                 aEl,
@@ -443,9 +465,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
 
   convertDividedHTMLTextToNumber(ratingText?: string): number {
     if (!ratingText) {
-      return NaN;
+      return 0;
     }
-    return Number(formatHTMLText(ratingText).replace(/,/g, ""));
+    return Number(formatHTMLText(ratingText).replace(/,/g, "")) || 0;
   }
 
   get allRates(): IRateDetails[] {
@@ -619,5 +641,93 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
 
   get allImages(): IImageDetails[] {
     return [this.posterImage];
+  }
+
+  get boxOffice(): IBoxOfficeDetails | undefined {
+    if (this.mainType !== TitleMainType.Movie) {
+      return undefined;
+    }
+    const $ = this.mainPageCheerio;
+    const budgetRawText = $("[data-testid='title-boxoffice-budget'] li span")
+      .first()
+      .text();
+    const [, budgetWithCommas] =
+      /\$([\d,]+)\s\(estimated\)/.exec(formatHTMLText(budgetRawText)) || [];
+    const budget = this.convertDividedHTMLTextToNumber(budgetWithCommas);
+    const sellInMainCountriesElText = $(
+      "[data-testid='title-boxoffice-grossdomestic']"
+    )
+      .first()
+      .text()
+      .replace?.(/\n/g, "");
+    const [, countriesString, sellInMainCountriesWithCommas] =
+      /gross ([^$]+)\$([\d,]+)$/i.exec(sellInMainCountriesElText) || [];
+    const countries = ((countriesString || "") as string)
+      .split("&")
+      .map((i) => i.trim().toLowerCase());
+    const sellInMainCountries = this.convertDividedHTMLTextToNumber(
+      sellInMainCountriesWithCommas
+    );
+    const openingSellText = $(
+      "[data-testid='title-boxoffice-openingweekenddomestic'] li"
+    )
+      .text()
+      .replace(/\n/g, "");
+
+    const [, openingSellWithCommas, openingDateString] =
+      /\$([\d,]+).*(\w{3}\s\d{1,2},\s\d{4})/i.exec(openingSellText) || [];
+    const openingSell = this.convertDividedHTMLTextToNumber(
+      openingSellWithCommas
+    );
+    const openingDate = dayjs(openingDateString, "MMM dd, YYYY")
+      .startOf("day")
+      .toDate();
+    const worldWideElText = $(
+      "[data-testid='title-boxoffice-cumulativeworldwidegross'] li span"
+    )
+      .first()
+      .text();
+    const [, worldWideSellWithCommas] =
+      /\$([\d,]+)/.exec(worldWideElText) || [];
+    const worldWideSell = this.convertDividedHTMLTextToNumber(
+      worldWideSellWithCommas
+    );
+    return {
+      budget,
+      worldwide: worldWideSell,
+      mainCountries: {
+        countries: countries,
+        amount: sellInMainCountries,
+      },
+      opening: {
+        countries: countries,
+        amount: openingSell,
+        date: openingDate,
+      },
+    };
+  }
+
+  get productionCompanies(): IProductionCompanyDetails[] {
+    const $ = this.companyCreditPageCheerio;
+    const productionCompanies: IProductionCompanyDetails[] = [];
+    $("#production")
+      .next("ul")
+      .find("li")
+      .each(function () {
+        const extraInfo = formatHTMLText(
+          $(this)
+            .contents()
+            .filter(function () {
+              return this.nodeType == 3;
+            })
+            .text()
+        );
+        const name = formatHTMLText($(this).find("a").text());
+        productionCompanies.push({
+          name,
+          ...(extraInfo ? { extraInfo } : {}),
+        });
+      });
+    return productionCompanies;
   }
 }

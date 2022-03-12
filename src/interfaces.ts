@@ -19,15 +19,13 @@ export interface ITitle {
   allRates: IRateDetails[];
   dates: IDatesDetails;
   allReleaseDates: IReleaseDateDetails[];
-  isEnded?: boolean;
   ageCategoryTitle: string;
   languages: string[];
   countriesOfOrigin: string[];
-  boxOffice: IBoxOfficeDetails;
-  productionCompanies: string[];
-  filmingLocations: string[];
   posterImage: IImageDetails;
   allImages: IImageDetails[];
+  boxOffice?: IBoxOfficeDetails;
+  productionCompanies: IProductionCompanyDetails[];
   otherLangs: ITitle[];
 }
 
@@ -100,15 +98,20 @@ export interface IReleaseDateDetails {
 export interface IBoxOfficeDetails {
   budget: number;
   worldwide: number;
-  crossMainCountries: {
+  mainCountries: {
     countries: string[];
     amount: number;
   };
   opening: {
     countries: string[];
     amount: number;
-    date: number;
+    date: Date;
   };
+}
+
+export interface IProductionCompanyDetails {
+  name: string;
+  extraInfo?: string;
 }
 
 export interface IImageDetails {
