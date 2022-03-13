@@ -89,6 +89,14 @@ describe("imdb resolver", () => {
         "twentieth century fox"
       );
       expect(avatar2009Result.productionCompanies.length).toBe(3);
+      const expectedStorylineStart =
+        "When his brother is killed in a robbery, paraplegic Marine".toLowerCase();
+      expect(
+        avatar2009Result.storyline.slice(0, expectedStorylineStart.length)
+      ).toBe(expectedStorylineStart);
+
+      expect(avatar2009Result.taglines.length).toBe(1);
+      expect(avatar2009Result.taglines[0]).toBe("enter the world");
     },
     200 * 1000
   );

@@ -26,7 +26,28 @@ export interface ITitle {
   allImages: IImageDetails[];
   boxOffice?: IBoxOfficeDetails;
   productionCompanies: IProductionCompanyDetails[];
+  storyline: string;
+  taglines: string[];
+
+  // TODO: add this properties
+
+  // runtime
+  // keywords
+  // all images
+  // awards
+  // awards summary
+  // videos ( just trailers )
+  // related
+
   otherLangs: ITitle[];
+}
+
+export interface ITitleLocale {
+  detailsLang: Language;
+  mainSource: ISourceDetails;
+  name: string;
+  otherNames: string[];
+  plot: string;
 }
 
 export interface ISourceDetails {

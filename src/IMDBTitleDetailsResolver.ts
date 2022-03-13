@@ -29,6 +29,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private fullCreditsPageHTMLData!: string;
   private ratingsPageHTMLData!: string;
   private companyCreditPageHTMLData!: string;
+  private taglinesPageHTMLData!: string;
 
   // cheerio loaded instances
   private mainPageCheerio!: CheerioAPI;
@@ -36,6 +37,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private fullCreditsPageCheerio!: CheerioAPI;
   private ratingsPageCheerio!: CheerioAPI;
   private companyCreditPageCheerio!: CheerioAPI;
+  private taglinesPageCheerio!: CheerioAPI;
 
   constructor(url: string) {
     this.url = url;
@@ -47,7 +49,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       this.getReleaseInfoPageHTMLData(),
       this.getFullCreditsPageHTMLData(),
       this.getRatingsPageHTMLData(),
-      this.getCompanyCreditsPageHTMLDate(),
+      this.getCompanyCreditsPageHTMLData(),
+      this.getTaglinesPageHTMLData(),
     ]);
 
     return this.generateReturnDetailsData();
@@ -80,7 +83,14 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     this.ratingsPageCheerio = loadCheerio(this.ratingsPageHTMLData);
   }
 
-  async getCompanyCreditsPageHTMLDate() {
+  async getTaglinesPageHTMLData() {
+    const taglinesPageUrl = this.addToPathOfUrl(this.url, "/taglines");
+    const apiResult = await axios.get(taglinesPageUrl);
+    this.taglinesPageHTMLData = apiResult.data;
+    this.taglinesPageCheerio = loadCheerio(this.taglinesPageHTMLData);
+  }
+
+  async getCompanyCreditsPageHTMLData() {
     const companyCreditPageUrl = this.addToPathOfUrl(
       this.url,
       "/companycredits"
@@ -123,7 +133,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       allImages: this.allImages,
       boxOffice: this.boxOffice,
       productionCompanies: this.productionCompanies,
+      storyline: this.storyline,
       otherLangs: [],
+      taglines: this.taglines,
     };
 
     return res;
@@ -726,5 +738,32 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
         });
       });
     return productionCompanies;
+  }
+
+  get storyline(): string {
+    const $ = this.mainPageCheerio;
+    return formatHTMLText(
+      $("[data-testid='storyline-plot-summary']")
+        .find(".ipc-html-content")
+        .find("div")
+        .first()
+        .contents()
+        .filter(function () {
+          return this.nodeType == 3;
+        })
+        .text()
+    );
+  }
+
+  get taglines(): string[] {
+    const $ = this.taglinesPageCheerio;
+    const taglines: string[] = [];
+
+    $("#taglines_content")
+      .find(".soda")
+      .each(function () {
+        taglines.push(formatHTMLText($(this).text()));
+      });
+    return taglines;
   }
 }
