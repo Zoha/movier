@@ -28,11 +28,11 @@ export interface ITitle {
   productionCompanies: IProductionCompanyDetails[];
   storyline: string;
   taglines: string[];
+  runtime: IRuntimeDetails;
+  keywords: string[];
 
   // TODO: add this properties
 
-  // runtime
-  // keywords
   // all images
   // awards
   // awards summary
@@ -156,6 +156,13 @@ export interface IFoundedTitleDetails {
   titleType: TitleMainType;
   matchScore: number;
   thumbnailImage: string;
+}
+
+export interface IRuntimeDetails {
+  title: string;
+  hours: number;
+  minutes: number;
+  seconds: number;
 }
 
 export interface ITitleDetailsResolver {

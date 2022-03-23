@@ -16,6 +16,7 @@ import {
   IImageDetails,
   IBoxOfficeDetails,
   IProductionCompanyDetails,
+  IRuntimeDetails,
 } from "./interfaces";
 import { camelCase } from "change-case";
 import { formatHTMLText } from "./utils/formatHTMLText";
@@ -30,6 +31,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private ratingsPageHTMLData!: string;
   private companyCreditPageHTMLData!: string;
   private taglinesPageHTMLData!: string;
+  private posterImagesFirstPageHTMLData!: string;
+  private stillFrameImagesFirstPageHTMLData!: string;
 
   // cheerio loaded instances
   private mainPageCheerio!: CheerioAPI;
@@ -38,6 +41,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private ratingsPageCheerio!: CheerioAPI;
   private companyCreditPageCheerio!: CheerioAPI;
   private taglinesPageCheerio!: CheerioAPI;
+  private posterImagesFirstPageCheerio!: CheerioAPI;
+  private stillFrameImagesFirstPageCheerio!: CheerioAPI;
 
   constructor(url: string) {
     this.url = url;
@@ -51,6 +56,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       this.getRatingsPageHTMLData(),
       this.getCompanyCreditsPageHTMLData(),
       this.getTaglinesPageHTMLData(),
+      this.getPosterImagesFirstPageHTMLData(),
+      this.getStillFrameImagesFirstPageHTMLData(),
     ]);
 
     return this.generateReturnDetailsData();
@@ -100,9 +107,46 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     this.companyCreditPageCheerio = loadCheerio(this.companyCreditPageHTMLData);
   }
 
-  addToPathOfUrl(originalPath: string, joinPath: string): string {
+  async getPosterImagesFirstPageHTMLData() {
+    const posterImagesFirstPageUrl = this.addToPathOfUrl(
+      this.url,
+      "/mediaindex",
+      {
+        refine: "poster",
+      }
+    );
+    const apiResult = await axios.get(posterImagesFirstPageUrl);
+    this.posterImagesFirstPageHTMLData = apiResult.data;
+    this.posterImagesFirstPageCheerio = loadCheerio(
+      this.posterImagesFirstPageHTMLData
+    );
+  }
+
+  async getStillFrameImagesFirstPageHTMLData() {
+    const stillFrameImagesFirstPageUrl = this.addToPathOfUrl(
+      this.url,
+      "/mediaindex",
+      {
+        refine: "still_frame",
+      }
+    );
+    const apiResult = await axios.get(stillFrameImagesFirstPageUrl);
+    this.stillFrameImagesFirstPageHTMLData = apiResult.data;
+    this.stillFrameImagesFirstPageCheerio = loadCheerio(
+      this.stillFrameImagesFirstPageHTMLData
+    );
+  }
+
+  addToPathOfUrl(
+    originalPath: string,
+    joinPath: string,
+    query: { [key: string]: string } = {}
+  ): string {
     const urlInstance = new URL(originalPath);
     urlInstance.pathname = urlInstance.pathname.replace(/\/$/, "") + joinPath;
+    Object.keys(query).forEach((key) => {
+      urlInstance.searchParams.set(key, query[key]);
+    });
     return urlInstance.href;
   }
 
@@ -134,8 +178,10 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       boxOffice: this.boxOffice,
       productionCompanies: this.productionCompanies,
       storyline: this.storyline,
-      otherLangs: [],
       taglines: this.taglines,
+      runtime: this.runtime,
+      keywords: this.keywords,
+      otherLangs: [],
     };
 
     return res;
@@ -630,12 +676,24 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return thumbnails.filter((i) => !!i);
   }
 
+  getFullSizeImageFromThumbnailUrl(thumbnailUrl?: string): string {
+    if (!thumbnailUrl || typeof thumbnailUrl !== "string") {
+      return "";
+    }
+    if (/@.+/i.test(thumbnailUrl)) {
+      return thumbnailUrl.split("@").slice(0, -1).join("@") + "@.jpg";
+    } else if (/\._V1.+/i.test(thumbnailUrl)) {
+      return thumbnailUrl.split("._V1").slice(0, -1).join("") + ".jpg";
+    }
+    return "";
+  }
+
   get posterImage(): IImageDetails {
     const $ = this.mainPageCheerio;
     const imgEl = $("[data-testid='hero-media__poster'] img").first();
     const srcset = imgEl.attr("srcset");
     const urlSrc = imgEl.attr("src");
-    const url = urlSrc?.split("@").slice(0, -1).join("@") + "@.jpg";
+    const url = this.getFullSizeImageFromThumbnailUrl(urlSrc);
     const original: IImageDetails = {
       title: "poster",
       sourceType: Source.IMDB,
@@ -649,7 +707,54 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get allImages(): IImageDetails[] {
-    return [this.posterImage];
+    const images: IImageDetails[] = [];
+    const $p = this.posterImagesFirstPageCheerio;
+    const $s = this.stillFrameImagesFirstPageCheerio;
+    const resolverInstance = this;
+    [
+      {
+        type: "poster",
+        cheerio: $p,
+      },
+      {
+        type: "stillFrame",
+        cheerio: $s,
+      },
+    ].forEach(({ type, cheerio: $target }) => {
+      $target("#media_index_thumbnail_grid a img").each(function () {
+        const thumb100ImageUrl = $target(this).attr("src");
+        images.push({
+          isThumbnail: false,
+          sourceType: Source.IMDB,
+          title: type,
+          url: resolverInstance.getFullSizeImageFromThumbnailUrl(
+            thumb100ImageUrl
+          ),
+
+          thumbnails: [
+            ...(thumb100ImageUrl
+              ? [
+                  {
+                    isThumbnail: true,
+                    sourceType: Source.IMDB,
+                    title: `${type} 100px`,
+                    size: {
+                      height: 100,
+                      width: 100,
+                    },
+                    url: thumb100ImageUrl,
+                  },
+                ]
+              : []),
+          ],
+        });
+      });
+    });
+
+    return [
+      this.posterImage,
+      ...images.filter((i) => i.url !== this.posterImage.url),
+    ];
   }
 
   get boxOffice(): IBoxOfficeDetails | undefined {
@@ -765,5 +870,39 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
         taglines.push(formatHTMLText($(this).text()));
       });
     return taglines;
+  }
+
+  get runtime(): IRuntimeDetails {
+    const $ = this.mainPageCheerio;
+    const runtimeTitle = formatHTMLText(
+      $("[data-testid='title-techspec_runtime'] div").first().text()
+    );
+
+    const seconds = 0;
+    const [, minutesString] = /(\d{1,2})\sminutes/.exec(runtimeTitle) || [];
+    const minutes = Number(minutesString) || 0;
+    const [, hoursString] = /(\d{1,2})\shours/.exec(runtimeTitle) || [];
+    const hours = Number(hoursString) || 0;
+
+    return {
+      title: runtimeTitle,
+      hours,
+      minutes,
+      seconds,
+    };
+  }
+
+  get keywords(): string[] {
+    const $ = this.mainPageCheerio;
+    const keywords: string[] = [];
+    $("[data-testid='storyline-plot-keywords'] a span").each(function () {
+      const keyword = formatHTMLText($(this).text());
+      // exclude keyword if it says \d more item ( for more tags )
+      if (/more$/.test(keyword)) {
+        return;
+      }
+      keywords.push(keyword);
+    });
+    return keywords;
   }
 }

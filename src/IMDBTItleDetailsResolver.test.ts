@@ -97,6 +97,24 @@ describe("imdb resolver", () => {
 
       expect(avatar2009Result.taglines.length).toBe(1);
       expect(avatar2009Result.taglines[0]).toBe("enter the world");
+      expect(avatar2009Result.runtime.title).toBe("2 hours 42 minutes");
+      expect(avatar2009Result.runtime.hours).toBe(2);
+      expect(avatar2009Result.runtime.minutes).toBe(42);
+      expect(avatar2009Result.keywords.length).toBeGreaterThan(4);
+      expect(avatar2009Result.keywords.includes("spiritualism")).toBe(true);
+
+      // posters & still frame images length
+      expect(
+        avatar2009Result.allImages.filter(
+          (i) => i.title.includes("poster") && !!i.url
+        ).length
+      ).toBeGreaterThanOrEqual(17);
+
+      expect(
+        avatar2009Result.allImages.filter(
+          (i) => i.title.includes("stillFrame") && !!i.url
+        ).length
+      ).toBeGreaterThanOrEqual(48);
     },
     200 * 1000
   );
