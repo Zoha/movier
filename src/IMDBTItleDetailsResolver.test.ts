@@ -1,4 +1,4 @@
-import { Genre, Language, Source, TitleMainType } from "./enums";
+import { Genre, ImageType, Language, Source, TitleMainType } from "./enums";
 import { IMDBTitleDetailsResolver } from "./IMDBTitleDetailsResolver";
 
 const avatar2009IMDBUrl = "https://www.imdb.com/title/tt0499549/";
@@ -106,15 +106,21 @@ describe("imdb resolver", () => {
       // posters & still frame images length
       expect(
         avatar2009Result.allImages.filter(
-          (i) => i.title.includes("poster") && !!i.url
+          (i) => i.type === ImageType.Poster && !!i.url
         ).length
       ).toBeGreaterThanOrEqual(17);
 
       expect(
         avatar2009Result.allImages.filter(
-          (i) => i.title.includes("stillFrame") && !!i.url
+          (i) => i.type === ImageType.StillFrame && !!i.url
         ).length
       ).toBeGreaterThanOrEqual(48);
+
+      expect(avatar2009Result.awards.length).toBeGreaterThan(200);
+      expect(avatar2009Result.awardsSummary.oscarWins).toBe(3);
+      expect(avatar2009Result.awardsSummary.totalNominations).toBeGreaterThan(
+        200
+      );
     },
     200 * 1000
   );

@@ -40,3 +40,16 @@ export enum Language {
   Persian = "persian",
   English = "english",
 }
+
+export enum AwardOutcome {
+  Winner = "winner",
+  Nominee = "nominee",
+}
+
+export enum ImageType {
+  Poster = "poster",
+  StillFrame = "stillFrame",
+  Event = "event",
+  VideoImage = "videoImage",
+  Other = "other",
+}

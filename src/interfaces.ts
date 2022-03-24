@@ -1,4 +1,11 @@
-import { Genre, Source, TitleMainType, Language } from "./enums";
+import {
+  Genre,
+  Source,
+  TitleMainType,
+  Language,
+  AwardOutcome,
+  ImageType,
+} from "./enums";
 
 export interface ITitle {
   detailsLang: Language;
@@ -30,15 +37,8 @@ export interface ITitle {
   taglines: string[];
   runtime: IRuntimeDetails;
   keywords: string[];
-
-  // TODO: add this properties
-
-  // all images
-  // awards
-  // awards summary
-  // videos ( just trailers )
-  // related
-
+  awards: IAwardDetails[];
+  awardsSummary: IAwardsSummaryDetails;
   otherLangs: ITitle[];
 }
 
@@ -136,6 +136,7 @@ export interface IProductionCompanyDetails {
 }
 
 export interface IImageDetails {
+  type: ImageType;
   title: string;
   sourceType: Source;
   url: string;
@@ -163,6 +164,29 @@ export interface IRuntimeDetails {
   hours: number;
   minutes: number;
   seconds: number;
+}
+
+export interface IAwardDetails {
+  source: ISourceDetails;
+  mainEvent: string;
+  eventYear: number;
+  subEvent: string;
+  awardTitle: string;
+  outcome: AwardOutcome;
+  details?: string;
+  relatedPersons: IPersonDetails[];
+  relatedTitles: {
+    name: string;
+    source: ISourceDetails;
+  }[];
+}
+
+export interface IAwardsSummaryDetails {
+  totalNominations: number;
+  nominationsOutcome: number;
+  wins: number;
+  oscarWins: number;
+  emmyWins: number;
 }
 
 export interface ITitleDetailsResolver {

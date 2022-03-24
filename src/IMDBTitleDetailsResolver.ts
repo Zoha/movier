@@ -1,6 +1,14 @@
+import { ResolverCacheManager } from "./utils/ResolverCacheManager";
 import { load as loadCheerio, Cheerio, CheerioAPI, Element } from "cheerio";
 import axios from "axios";
-import { Genre, Language, Source, TitleMainType } from "./enums";
+import {
+  AwardOutcome,
+  Genre,
+  ImageType,
+  Language,
+  Source,
+  TitleMainType,
+} from "./enums";
 import {
   ICastDetails,
   IPersonDetails,
@@ -17,6 +25,8 @@ import {
   IBoxOfficeDetails,
   IProductionCompanyDetails,
   IRuntimeDetails,
+  IAwardDetails,
+  IAwardsSummaryDetails,
 } from "./interfaces";
 import { camelCase } from "change-case";
 import { formatHTMLText } from "./utils/formatHTMLText";
@@ -25,6 +35,7 @@ import dayjs from "dayjs";
 
 export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private url: string;
+  private resolverCacheManager = new ResolverCacheManager();
   private mainPageHTMLData!: string;
   private releaseInfoPageHTMLData!: string;
   private fullCreditsPageHTMLData!: string;
@@ -33,6 +44,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private taglinesPageHTMLData!: string;
   private posterImagesFirstPageHTMLData!: string;
   private stillFrameImagesFirstPageHTMLData!: string;
+  private awardsPageHTMLData!: string;
 
   // cheerio loaded instances
   private mainPageCheerio!: CheerioAPI;
@@ -43,12 +55,13 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private taglinesPageCheerio!: CheerioAPI;
   private posterImagesFirstPageCheerio!: CheerioAPI;
   private stillFrameImagesFirstPageCheerio!: CheerioAPI;
+  private awardsPageCheerio!: CheerioAPI;
 
   constructor(url: string) {
     this.url = url;
   }
 
-  async getDetails(): Promise<ITitle | undefined> {
+  async getDetails(): Promise<ITitle> {
     await Promise.all([
       this.getMainPageHTMLData(),
       this.getReleaseInfoPageHTMLData(),
@@ -58,6 +71,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       this.getTaglinesPageHTMLData(),
       this.getPosterImagesFirstPageHTMLData(),
       this.getStillFrameImagesFirstPageHTMLData(),
+      this.getAwardsPageHTMLData(),
     ]);
 
     return this.generateReturnDetailsData();
@@ -137,6 +151,13 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     );
   }
 
+  async getAwardsPageHTMLData() {
+    const awardsPageUrl = this.addToPathOfUrl(this.url, "/awards");
+    const apiResult = await axios.get(awardsPageUrl);
+    this.awardsPageHTMLData = apiResult.data;
+    this.awardsPageCheerio = loadCheerio(this.awardsPageHTMLData);
+  }
+
   addToPathOfUrl(
     originalPath: string,
     joinPath: string,
@@ -150,7 +171,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return urlInstance.href;
   }
 
-  generateReturnDetailsData() {
+  async generateReturnDetailsData() {
     const res: ITitle = {
       detailsLang: Language.English,
       mainSource: this.mainSourceDetails,
@@ -181,6 +202,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       taglines: this.taglines,
       runtime: this.runtime,
       keywords: this.keywords,
+      awards: this.awards,
+      awardsSummary: this.awardsSummary,
       otherLangs: [],
     };
 
@@ -199,22 +222,41 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get mainSourceDetails(): ISourceDetails {
-    return {
+    const cacheDataManager =
+      this.resolverCacheManager.load("mainSourceDetails");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as ISourceDetails;
+    }
+    return cacheDataManager.cacheAndReturnData({
       sourceId: this.sourceId,
       sourceType: Source.IMDB,
       sourceUrl: this.url,
-    };
+    });
   }
 
   get allSources(): ISourceDetails[] {
-    return [this.mainSourceDetails];
+    const cacheDataManager = this.resolverCacheManager.load("allSources");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as ISourceDetails[];
+    }
+    return cacheDataManager.cacheAndReturnData([this.mainSourceDetails]);
   }
 
   get sourceId(): string {
-    return this.extractIdFromUrl(this.url, "tt");
+    const cacheDataManager = this.resolverCacheManager.load("sourceId");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string;
+    }
+    return cacheDataManager.cacheAndReturnData(
+      this.extractIdFromUrl(this.url, "tt")
+    );
   }
 
   get name(): string {
+    const cacheDataManager = this.resolverCacheManager.load("name");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string;
+    }
     const nameInAllNamesList = this.allNames.find((i) =>
       i.title.toLowerCase().includes("original title")
     )?.name;
@@ -222,10 +264,14 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (!nameInAllNamesList) {
       return this.nameInMainPage;
     }
-    return nameInAllNamesList;
+    return cacheDataManager.cacheAndReturnData(nameInAllNamesList);
   }
 
   get allNames(): Array<{ title: string; name: string }> {
+    const cacheDataManager = this.resolverCacheManager.load("allNames");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as Array<{ title: string; name: string }>;
+    }
     const $ = this.releaseInfoPageCheerio;
     const allNames: Array<{ title: string; name: string }> = [];
     const allNamesTrs = $("#akas").next("table").find("tr");
@@ -236,20 +282,36 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
         name: formatHTMLText($this.find("td").last().text()),
       });
     });
-    return allNames;
+    return cacheDataManager.cacheAndReturnData(allNames);
   }
 
   get allUniqueNames(): string[] {
-    return [...new Set(this.allNames.map((i) => i.name))];
+    const cacheDataManager = this.resolverCacheManager.load("allUniqueNames");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string[];
+    }
+    return cacheDataManager.cacheAndReturnData([
+      ...new Set(this.allNames.map((i) => i.name)),
+    ]);
   }
 
   get nameInMainPage(): string {
+    const cacheDataManager = this.resolverCacheManager.load("nameInMainPage");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string;
+    }
     const $ = this.mainPageCheerio;
-    return formatHTMLText($("h1").first().text());
+    return cacheDataManager.cacheAndReturnData(
+      formatHTMLText($("h1").first().text())
+    );
   }
 
   get worldWideName(): string {
-    return (
+    const cacheDataManager = this.resolverCacheManager.load("worldWideName");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string;
+    }
+    return cacheDataManager.cacheAndReturnData(
       formatHTMLText(
         this.allNames.find((i) => i.title.toLowerCase().includes("world-wide"))
           ?.name
@@ -258,6 +320,10 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get titleYear(): number {
+    const cacheDataManager = this.resolverCacheManager.load("titleYear");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as number;
+    }
     const $ = this.releaseInfoPageCheerio;
     const yearText = $("#releaseinfo_content table tr")
       .eq(0)
@@ -265,10 +331,14 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       .eq(1)
       .text()
       .slice(-4);
-    return Number(yearText);
+    return cacheDataManager.cacheAndReturnData(Number(yearText));
   }
 
   get genres(): Genre[] {
+    const cacheDataManager = this.resolverCacheManager.load("genres");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as Genre[];
+    }
     const $ = this.mainPageCheerio;
     const originalIMDBGenres: string[] = [];
     $("[data-testid='storyline-genres'] a").each(function () {
@@ -277,9 +347,13 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
 
     const genreEnumValues = Object.values(Genre);
 
-    return originalIMDBGenres
-      .map((genre) => camelCase(genre))
-      .filter((oGenre) => genreEnumValues.includes(oGenre as Genre)) as Genre[];
+    return cacheDataManager.cacheAndReturnData(
+      originalIMDBGenres
+        .map((genre) => camelCase(genre))
+        .filter((oGenre) =>
+          genreEnumValues.includes(oGenre as Genre)
+        ) as Genre[]
+    );
   }
 
   extractSourceDetailsFromAElement(
@@ -358,89 +432,121 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get directors(): IPersonDetails[] {
+    const cacheDataManager = this.resolverCacheManager.load("directors");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IPersonDetails[];
+    }
     // TODO: some other info for series episodes
-    return this.extractPersonInfoFromTrsForSpecificSectionId("#director");
+    return cacheDataManager.cacheAndReturnData(
+      this.extractPersonInfoFromTrsForSpecificSectionId("#director")
+    );
   }
 
   get writers(): IPersonDetails[] {
-    return this.extractPersonInfoFromTrsForSpecificSectionId(
-      "#writer",
-      (el) => {
+    const cacheDataManager = this.resolverCacheManager.load("writers");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IPersonDetails[];
+    }
+    return cacheDataManager.cacheAndReturnData(
+      this.extractPersonInfoFromTrsForSpecificSectionId("#writer", (el) => {
         const extraInfo = formatHTMLText(el.find("td").eq(2).text());
         return { extraInfo };
-      }
+      })
     );
   }
 
   get mainType(): TitleMainType {
+    const cacheDataManager = this.resolverCacheManager.load("mainType");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as TitleMainType;
+    }
     const $ = this.mainPageCheerio;
     const metaDataBoxText = $("[data-testid='hero-title-block__metadata']")
       .text()
       ?.toLowerCase();
-    return metaDataBoxText.includes("episode")
-      ? TitleMainType.SeriesEpisode
-      : metaDataBoxText.includes("series")
-      ? TitleMainType.Series
-      : TitleMainType.Movie;
+    return cacheDataManager.cacheAndReturnData(
+      metaDataBoxText.includes("episode")
+        ? TitleMainType.SeriesEpisode
+        : metaDataBoxText.includes("series")
+        ? TitleMainType.Series
+        : TitleMainType.Movie
+    );
   }
 
   get plot(): string {
+    const cacheDataManager = this.resolverCacheManager.load("plot");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string;
+    }
     const $ = this.mainPageCheerio;
     const plotText = $("[data-testid='plot-xl']").text();
-    return formatHTMLText(plotText);
+    return cacheDataManager.cacheAndReturnData(formatHTMLText(plotText));
   }
 
   get cast(): ICastDetails[] {
+    const cacheDataManager = this.resolverCacheManager.load("cast");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as ICastDetails[];
+    }
     const resolverInstance = this;
 
     const $ = this.fullCreditsPageCheerio;
-    return this.extractPersonInfoFromTrsForSpecificSectionId(
-      "#cast",
-      (el): Omit<ICastDetails, "name" | "source"> => {
-        const roles: IRoleDetails[] = [];
-        el.find("td")
-          .eq(3)
-          .find("a")
-          .each(function () {
-            const aEl = $(this);
-            const isCharLink = /\/nm\d{4}/.test(aEl.attr("href") || "");
-            if (!isCharLink) {
-              return;
-            }
-            roles.push({
-              source: resolverInstance.extractSourceDetailsFromAElement(
-                aEl,
-                "nm"
-              ),
-              name: formatHTMLText(aEl.text()),
+    return cacheDataManager.cacheAndReturnData(
+      this.extractPersonInfoFromTrsForSpecificSectionId(
+        "#cast",
+        (el): Omit<ICastDetails, "name" | "source"> => {
+          const roles: IRoleDetails[] = [];
+          el.find("td")
+            .eq(3)
+            .find("a")
+            .each(function () {
+              const aEl = $(this);
+              const isCharLink = /\/nm\d{4}/.test(aEl.attr("href") || "");
+              if (!isCharLink) {
+                return;
+              }
+              roles.push({
+                source: resolverInstance.extractSourceDetailsFromAElement(
+                  aEl,
+                  "nm"
+                ),
+                name: formatHTMLText(aEl.text()),
+              });
             });
-          });
-        const secondTdText = el.find("td").eq(3).text();
-        const [, asWho] = /\(as\s([^)]+)\)/.exec(secondTdText) || [];
-        const otherNames = asWho ? [formatHTMLText(asWho)] : [];
-        const imageThumbnailUrl = el
-          .find("td:eq(0) img")
-          .first()
-          .attr("loadlate");
-        return { otherNames, roles, imageThumbnailUrl };
-      },
-      {
-        nameAElementSelector: "td:eq(1) a:eq(0)",
-      }
-    ) as ICastDetails[];
+          const secondTdText = el.find("td").eq(3).text();
+          const [, asWho] = /\(as\s([^)]+)\)/.exec(secondTdText) || [];
+          const otherNames = asWho ? [formatHTMLText(asWho)] : [];
+          const imageThumbnailUrl = el
+            .find("td:eq(0) img")
+            .first()
+            .attr("loadlate");
+          return { otherNames, roles, imageThumbnailUrl };
+        },
+        {
+          nameAElementSelector: "td:eq(1) a:eq(0)",
+        }
+      ) as ICastDetails[]
+    );
   }
 
   get producers(): IPersonDetails[] {
-    return this.extractPersonInfoFromTrsForSpecificSectionId(
-      "#producer",
-      (el) => {
+    const cacheDataManager = this.resolverCacheManager.load("producers");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IPersonDetails[];
+    }
+    return cacheDataManager.cacheAndReturnData(
+      this.extractPersonInfoFromTrsForSpecificSectionId("#producer", (el) => {
         const extraInfo = formatHTMLText(el.find("td").eq(2).text());
         return { extraInfo };
-      }
+      })
     );
   }
 
   get mainRate(): IRateDetails {
+    const cacheDataManager = this.resolverCacheManager.load("mainRate");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IRateDetails;
+    }
     const $ = this.ratingsPageCheerio;
     const assortedByGenderTrs = $("td.ratingTable")
       .first()
@@ -487,7 +593,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
         });
       });
 
-    return {
+    return cacheDataManager.cacheAndReturnData({
       rate: getRateAndVotesCountFromTd(allGendersTds.eq(1)).rate,
       votesCount: getRateAndVotesCountFromTd(allGendersTds.eq(1)).votesCount,
       rateSource: Source.IMDB,
@@ -515,7 +621,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
         },
       },
       assortedByRate: assortedByRateList,
-    };
+    });
   }
 
   convertDividedHTMLTextToNumber(ratingText?: string): number {
@@ -526,10 +632,18 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get allRates(): IRateDetails[] {
-    return [this.mainRate];
+    const cacheDataManager = this.resolverCacheManager.load("allRates");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IRateDetails[];
+    }
+    return cacheDataManager.cacheAndReturnData([this.mainRate]);
   }
 
   get allReleaseDates(): IReleaseDateDetails[] {
+    const cacheDataManager = this.resolverCacheManager.load("allReleaseDates");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IReleaseDateDetails[];
+    }
     const $ = this.releaseInfoPageCheerio;
 
     const releaseDates: IReleaseDateDetails[] = [];
@@ -561,10 +675,14 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
           ...(extraInfo ? { extraInfo } : {}),
         });
       });
-    return releaseDates;
+    return cacheDataManager.cacheAndReturnData(releaseDates);
   }
 
   get isEnded(): boolean {
+    const cacheDataManager = this.resolverCacheManager.load("isEnded");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as boolean;
+    }
     const $ = this.mainPageCheerio;
 
     if (this.mainType === TitleMainType.Movie) {
@@ -575,10 +693,14 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (yearDisplayRegexp.test(metaText)) {
       return true;
     }
-    return false;
+    return cacheDataManager.cacheAndReturnData(false);
   }
 
   get endYear(): number {
+    const cacheDataManager = this.resolverCacheManager.load("endYear");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as number;
+    }
     const $ = this.mainPageCheerio;
     if (!this.isEnded) {
       return NaN;
@@ -588,17 +710,21 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
 
     const yearDisplayRegexp = /\d{4}.{1}(\d{4})/;
     const [, yearText] = yearDisplayRegexp.exec(metaText) || [];
-    return Number(yearText);
+    return cacheDataManager.cacheAndReturnData(Number(yearText));
   }
 
   get dates(): IDatesDetails {
+    const cacheDataManager = this.resolverCacheManager.load("dates");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IDatesDetails;
+    }
     // pick first one that dont have a festival in its info
     const startDateDetails =
       this.allReleaseDates.find(
         (releaseDate) => !releaseDate.extraInfo?.includes?.("festival")
       ) || this.allReleaseDates[0];
 
-    return {
+    return cacheDataManager.cacheAndReturnData({
       startCountry: startDateDetails.country,
       startDate: startDateDetails.date,
       startExtraInfo: startDateDetails.extraInfo,
@@ -610,10 +736,14 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
             endYear: this.endYear,
           }
         : {}),
-    };
+    });
   }
 
   get ageCategoryTitle(): string {
+    const cacheDataManager = this.resolverCacheManager.load("ageCategoryTitle");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string;
+    }
     const $ = this.mainPageCheerio;
 
     let metaText = "";
@@ -623,30 +753,43 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       }
     });
 
-    return metaText;
+    return cacheDataManager.cacheAndReturnData(metaText);
   }
 
   get languages(): string[] {
+    const cacheDataManager = this.resolverCacheManager.load("languages");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string[];
+    }
     const $ = this.mainPageCheerio;
     const languageEl = $("[data-testid='title-details-languages']").first();
     const languages: string[] = [];
     languageEl.find("li a").each(function () {
       languages.push(formatHTMLText($(this).text()));
     });
-    return languages;
+    return cacheDataManager.cacheAndReturnData(languages);
   }
 
   get countriesOfOrigin(): string[] {
+    const cacheDataManager =
+      this.resolverCacheManager.load("countriesOfOrigin");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string[];
+    }
     const $ = this.mainPageCheerio;
     const countriesEl = $("[data-testid='title-details-origin']").first();
     const countries: string[] = [];
     countriesEl.find("li a").each(function () {
       countries.push(formatHTMLText($(this).text()));
     });
-    return countries;
+    return cacheDataManager.cacheAndReturnData(countries);
   }
 
-  getAllThumbnailsFromSrcSet(srcset: string): IImageDetails[] {
+  getAllThumbnailsFromSrcSet(
+    srcset: string,
+    alt: string,
+    type = ImageType.Poster
+  ): IImageDetails[] {
     const setPartsRegexp = /([^\s]+)\s(\d{2,4}w)$/;
     const thumbnails = srcset
       .split("w,")
@@ -656,13 +799,15 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
         return !!url;
       })
       .map((set) => {
-        const [, url, title] = setPartsRegexp.exec(set) || [];
+        const [, url, titlePostfix] = setPartsRegexp.exec(set) || [];
+        const title = `${alt} ${titlePostfix}`;
         const [, width, height] = /(\d{2,4}),(\d{2,4})_\.jpg$/.exec(url) || [];
         return {
           title,
           sourceType: Source.IMDB,
           isThumbnail: true,
           url,
+          type,
           ...(width && height
             ? {
                 size: {
@@ -689,55 +834,70 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get posterImage(): IImageDetails {
+    const cacheDataManager = this.resolverCacheManager.load("posterImage");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IImageDetails;
+    }
     const $ = this.mainPageCheerio;
     const imgEl = $("[data-testid='hero-media__poster'] img").first();
     const srcset = imgEl.attr("srcset");
     const urlSrc = imgEl.attr("src");
     const url = this.getFullSizeImageFromThumbnailUrl(urlSrc);
+    const type = ImageType.Poster;
     const original: IImageDetails = {
-      title: "poster",
+      title: `${this.name} ${this.titleYear}`,
+      type,
       sourceType: Source.IMDB,
       isThumbnail: false,
       url,
     };
     if (srcset) {
-      original.thumbnails = this.getAllThumbnailsFromSrcSet(srcset);
+      original.thumbnails = this.getAllThumbnailsFromSrcSet(
+        srcset,
+        imgEl.attr("alt") || ""
+      );
     }
-    return original;
+    return cacheDataManager.cacheAndReturnData(original);
   }
 
   get allImages(): IImageDetails[] {
+    const cacheDataManager = this.resolverCacheManager.load("allImages");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IImageDetails[];
+    }
     const images: IImageDetails[] = [];
     const $p = this.posterImagesFirstPageCheerio;
     const $s = this.stillFrameImagesFirstPageCheerio;
     const resolverInstance = this;
     [
       {
-        type: "poster",
+        type: ImageType.Poster,
         cheerio: $p,
       },
       {
-        type: "stillFrame",
+        type: ImageType.StillFrame,
         cheerio: $s,
       },
     ].forEach(({ type, cheerio: $target }) => {
       $target("#media_index_thumbnail_grid a img").each(function () {
         const thumb100ImageUrl = $target(this).attr("src");
+        const title = $target(this).attr("alt") || "";
         images.push({
           isThumbnail: false,
           sourceType: Source.IMDB,
-          title: type,
+          title,
+          type,
           url: resolverInstance.getFullSizeImageFromThumbnailUrl(
             thumb100ImageUrl
           ),
-
           thumbnails: [
             ...(thumb100ImageUrl
               ? [
                   {
                     isThumbnail: true,
                     sourceType: Source.IMDB,
-                    title: `${type} 100px`,
+                    title: `${title} 100px`,
+                    type,
                     size: {
                       height: 100,
                       width: 100,
@@ -751,13 +911,17 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       });
     });
 
-    return [
+    return cacheDataManager.cacheAndReturnData([
       this.posterImage,
       ...images.filter((i) => i.url !== this.posterImage.url),
-    ];
+    ]);
   }
 
   get boxOffice(): IBoxOfficeDetails | undefined {
+    const cacheDataManager = this.resolverCacheManager.load("boxOffice");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IBoxOfficeDetails | undefined;
+    }
     if (this.mainType !== TitleMainType.Movie) {
       return undefined;
     }
@@ -806,7 +970,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const worldWideSell = this.convertDividedHTMLTextToNumber(
       worldWideSellWithCommas
     );
-    return {
+    return cacheDataManager.cacheAndReturnData({
       budget,
       worldwide: worldWideSell,
       mainCountries: {
@@ -818,10 +982,16 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
         amount: openingSell,
         date: openingDate,
       },
-    };
+    });
   }
 
   get productionCompanies(): IProductionCompanyDetails[] {
+    const cacheDataManager = this.resolverCacheManager.load(
+      "productionCompanies"
+    );
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IProductionCompanyDetails[];
+    }
     const $ = this.companyCreditPageCheerio;
     const productionCompanies: IProductionCompanyDetails[] = [];
     $("#production")
@@ -842,25 +1012,35 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
           ...(extraInfo ? { extraInfo } : {}),
         });
       });
-    return productionCompanies;
+    return cacheDataManager.cacheAndReturnData(productionCompanies);
   }
 
   get storyline(): string {
+    const cacheDataManager = this.resolverCacheManager.load("storyline");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string;
+    }
     const $ = this.mainPageCheerio;
-    return formatHTMLText(
-      $("[data-testid='storyline-plot-summary']")
-        .find(".ipc-html-content")
-        .find("div")
-        .first()
-        .contents()
-        .filter(function () {
-          return this.nodeType == 3;
-        })
-        .text()
+    return cacheDataManager.cacheAndReturnData(
+      formatHTMLText(
+        $("[data-testid='storyline-plot-summary']")
+          .find(".ipc-html-content")
+          .find("div")
+          .first()
+          .contents()
+          .filter(function () {
+            return this.nodeType == 3;
+          })
+          .text()
+      )
     );
   }
 
   get taglines(): string[] {
+    const cacheDataManager = this.resolverCacheManager.load("taglines");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string[];
+    }
     const $ = this.taglinesPageCheerio;
     const taglines: string[] = [];
 
@@ -869,10 +1049,14 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       .each(function () {
         taglines.push(formatHTMLText($(this).text()));
       });
-    return taglines;
+    return cacheDataManager.cacheAndReturnData(taglines);
   }
 
   get runtime(): IRuntimeDetails {
+    const cacheDataManager = this.resolverCacheManager.load("runtime");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IRuntimeDetails;
+    }
     const $ = this.mainPageCheerio;
     const runtimeTitle = formatHTMLText(
       $("[data-testid='title-techspec_runtime'] div").first().text()
@@ -884,15 +1068,19 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const [, hoursString] = /(\d{1,2})\shours/.exec(runtimeTitle) || [];
     const hours = Number(hoursString) || 0;
 
-    return {
+    return cacheDataManager.cacheAndReturnData({
       title: runtimeTitle,
       hours,
       minutes,
       seconds,
-    };
+    });
   }
 
   get keywords(): string[] {
+    const cacheDataManager = this.resolverCacheManager.load("keywords");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string[];
+    }
     const $ = this.mainPageCheerio;
     const keywords: string[] = [];
     $("[data-testid='storyline-plot-keywords'] a span").each(function () {
@@ -903,6 +1091,151 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       }
       keywords.push(keyword);
     });
-    return keywords;
+    return cacheDataManager.cacheAndReturnData(keywords);
+  }
+
+  get awards(): IAwardDetails[] {
+    const cacheDataManager = this.resolverCacheManager.load("awards");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IAwardDetails[];
+    }
+    const $ = this.awardsPageCheerio;
+    const awards: IAwardDetails[] = [];
+    const resolverInstance = this;
+    $("h3")
+      .slice(1)
+      .each(function () {
+        const mainEventFullText = formatHTMLText($(this).text());
+        const [, mainEvent, eventYearString] =
+          /(.+)\s+(\d{4})$/.exec(mainEventFullText) || [];
+        const eventYear = Number(eventYearString);
+        const source: ISourceDetails =
+          resolverInstance.extractSourceDetailsFromAElement(
+            $(this).find("a").first(),
+            "ev"
+          );
+        const tableEl = $(this).next("table.awards").first();
+        const outcomeTds = tableEl.find("td.title_award_outcome");
+        const outcomeTdsLength = outcomeTds.length;
+        let proceedRows = 0;
+        // for each outcome
+        Array(outcomeTdsLength)
+          .fill(null)
+          .forEach((n, outcomeTdIndex) => {
+            const td = outcomeTds.eq(outcomeTdIndex);
+            const trsLength = Number(td.attr("rowspan"));
+
+            const outcome =
+              formatHTMLText(td.find("b").first().text()) === "winner"
+                ? AwardOutcome.Winner
+                : AwardOutcome.Nominee;
+
+            const subEvent = formatHTMLText(td.find("span").first().text());
+
+            // for each tr of the outcome
+            tableEl
+              .find("tr")
+              .slice(proceedRows, proceedRows + trsLength)
+              .each(function () {
+                const descriptionTd = $(this).find(".award_description");
+                const awardTitle = formatHTMLText(
+                  descriptionTd
+                    .contents()
+                    .filter(function () {
+                      return this.nodeType == 3;
+                    })
+                    .text()
+                );
+                const relatedPersons: IPersonDetails[] = [];
+                const relatedTitles: {
+                  name: string;
+                  source: ISourceDetails;
+                }[] = [];
+                descriptionTd.find("a").each(function () {
+                  const href = $(this).attr("href");
+                  if (href?.startsWith("/title")) {
+                    relatedTitles.push({
+                      name: formatHTMLText($(this).text()),
+                      source: resolverInstance.extractSourceDetailsFromAElement(
+                        $(this),
+                        "tt"
+                      ),
+                    });
+                  } else {
+                    relatedPersons.push({
+                      name: formatHTMLText($(this).text()),
+                      source: resolverInstance.extractSourceDetailsFromAElement(
+                        $(this),
+                        "nm"
+                      ),
+                    });
+                  }
+                });
+
+                const details = formatHTMLText(
+                  descriptionTd.find(".award_detail_notes").text()
+                );
+
+                awards.push({
+                  mainEvent,
+                  eventYear,
+                  outcome,
+                  subEvent,
+                  awardTitle,
+                  source,
+                  relatedPersons,
+                  relatedTitles,
+                  details,
+                });
+              });
+            proceedRows += trsLength;
+          });
+      });
+    return cacheDataManager.cacheAndReturnData(awards);
+  }
+
+  get awardsSummary(): IAwardsSummaryDetails {
+    const cacheDataManager = this.resolverCacheManager.load("awardsSummary");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IAwardsSummaryDetails;
+    }
+    const $ = this.awardsPageCheerio;
+    let totalNominations = 0;
+    let nominationsOutcome = 0;
+    let wins = 0;
+    $("td.title_award_outcome").each(function () {
+      const td = $(this);
+      const text = formatHTMLText(td.text());
+      const length = Number(td.attr("rowspan"));
+      totalNominations += length;
+      if (text.includes("winner")) {
+        wins += length;
+      } else {
+        nominationsOutcome += length;
+      }
+    });
+    const $m = this.mainPageCheerio;
+    const infoText = $m("[data-testid='award_information']")
+      .first()
+      .find("a.ipc-metadata-list-item__label")
+      .text();
+    const [, primaryEventWins] = /won (\d+) .+/i.exec(infoText) || [];
+    let oscarWins = 0,
+      emmyWins = 0;
+    if (primaryEventWins) {
+      if (this.mainType === TitleMainType.Movie) {
+        oscarWins = Number(primaryEventWins);
+      } else {
+        emmyWins = Number(primaryEventWins);
+      }
+    }
+
+    return cacheDataManager.cacheAndReturnData({
+      totalNominations,
+      nominationsOutcome,
+      wins,
+      oscarWins,
+      emmyWins,
+    });
   }
 }
