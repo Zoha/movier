@@ -1,127 +1,322 @@
+import { IPersonDetails } from "./interfaces";
 import { Genre, ImageType, Language, Source, TitleMainType } from "./enums";
 import { IMDBTitleDetailsResolver } from "./IMDBTitleDetailsResolver";
 
-const avatar2009IMDBUrl = "https://www.imdb.com/title/tt0499549/";
+export interface ITitleTestData {
+  url: string;
+  name: string;
+  worldWideName: string;
+  sourceId: string;
+  titleYear: number;
+  sourcesMinLength: number;
+  otherNamesMinLength: number;
+  genres: Genre[];
+  directors: {
+    length: number;
+    firstOneName: string;
+    firstOneId: string;
+  };
+  writers: {
+    length: number;
+    firstOneName: string;
+    firstOneExtraInfo: string;
+    firstONeSourceId: string;
+  };
+  mainType: TitleMainType;
+  plotContains: string;
+  casts: {
+    minLength: number;
+    tests: {
+      index?: number | null;
+      finderF?: (item: IPersonDetails) => boolean;
+      name: string;
+      sourceId?: string | null;
+      rolesLength: number;
+      firstRoleName: string;
+    }[];
+  };
+  mainRate: {
+    rate: number;
+    minVotesCount: number;
+    assortedByRateLength: number;
+  };
+  producesLength: number;
+  allRatesMinLength: number;
+  dates: {
+    isEnded: boolean;
+    startYear: number;
+    startCountry: string;
+  };
+  allReleaseDatesMinLength: number;
+  ageCategory: string;
+  languages: string[];
+  firstCountriesOfOrigin: string;
+  posterImageUrl: string;
+  posterImageThumbnailsMinLength: number;
+  allImagesMinLength: number;
+  boxofficeBudget: number;
+  openingAmount: number;
+  openingDateYear: number;
+  worldWideSellMin: number;
+  mainCountriesSellMin: number;
+  firstProductionCompanyName: string;
+  productionCompaniesLength: number;
+  storylineStart: string;
+  taglinesMinLength: number;
+  firstTagline: string;
+  runtimeTitle: string;
+  runtimeHours: number;
+  runtimeMinutes: number;
+  keywordsMinLength: number;
+  onOfKeywords: string;
+  postersMinLength: number;
+  stillFrameMinLength: number;
+  awardsMinLength: number;
+  oscars: number;
+  minNominations: number;
+}
+
+const titlesToTest: ITitleTestData[] = [
+  {
+    url: "https://www.imdb.com/title/tt0499549/",
+    name: "avatar",
+    worldWideName: "avatar",
+    sourceId: "tt0499549",
+    titleYear: 2009,
+    sourcesMinLength: 1,
+    otherNamesMinLength: 10,
+    genres: [Genre.Action, Genre.Adventure, Genre.Fantasy, Genre.SciFi],
+    directors: {
+      length: 1,
+      firstOneName: "james cameron",
+      firstOneId: "nm0000116",
+    },
+    writers: {
+      length: 1,
+      firstOneName: "james cameron",
+      firstOneExtraInfo: "(written by)",
+      firstONeSourceId: "nm0000116",
+    },
+    mainType: TitleMainType.Movie,
+    plotContains: "a paraplegic marine dispatched to the moon",
+    casts: {
+      minLength: 20,
+      tests: [
+        {
+          index: 0,
+          name: "sam worthington",
+          sourceId: "nm0941777",
+          rolesLength: 1,
+          firstRoleName: "jake sully",
+        },
+        {
+          index: null,
+          finderF: (item: IPersonDetails) => item.name === "kevin dorman",
+          name: "kevin dorman",
+          sourceId: null,
+          rolesLength: 2,
+          firstRoleName: "tractor operator",
+        },
+      ],
+    },
+    mainRate: {
+      rate: 7.9,
+      minVotesCount: 1100000,
+      assortedByRateLength: 10,
+    },
+    producesLength: 8,
+    allRatesMinLength: 1,
+    dates: {
+      isEnded: false,
+      startYear: 2009,
+      startCountry: "uk",
+    },
+    allReleaseDatesMinLength: 1,
+    ageCategory: "pg-13",
+    languages: ["english", "spanish"],
+    firstCountriesOfOrigin: "united states",
+    posterImageUrl:
+      "https://m.media-amazon.com/images/M/MV5BMTYwOTEwNjAzMl5BMl5BanBnXkFtZTcwODc5MTUwMw@@.jpg",
+    posterImageThumbnailsMinLength: 3,
+    allImagesMinLength: 48,
+    boxofficeBudget: 237000000,
+    openingAmount: 77025481,
+    openingDateYear: 2009,
+    worldWideSellMin: 2847379794,
+    mainCountriesSellMin: 760507625,
+    firstProductionCompanyName: "twentieth century fox",
+    productionCompaniesLength: 3,
+    storylineStart:
+      "when his brother is killed in a robbery, paraplegic marine",
+    taglinesMinLength: 1,
+    firstTagline: "enter the world",
+    runtimeTitle: "2 hours 42 minutes",
+    runtimeHours: 2,
+    runtimeMinutes: 42,
+    keywordsMinLength: 5,
+    onOfKeywords: "spiritualism",
+    postersMinLength: 17,
+    stillFrameMinLength: 48,
+    awardsMinLength: 200,
+    oscars: 3,
+    minNominations: 200,
+  },
+];
 
 describe("imdb resolver", () => {
-  test(
-    "check avatar 2009 result",
-    async () => {
-      const resolver = new IMDBTitleDetailsResolver(avatar2009IMDBUrl);
-      const avatar2009Result = await resolver.getDetails();
-      expect(avatar2009IMDBUrl).not.toBe(undefined);
-      if (!avatar2009Result) {
-        return;
-      }
-      expect(avatar2009Result.detailsLang).toBe(Language.English);
-      expect(avatar2009Result.mainSource.sourceId).toBe("tt0499549");
-      expect(avatar2009Result.mainSource.sourceType).toBe(Source.IMDB);
-      expect(avatar2009Result.mainSource.sourceUrl).toBe(avatar2009IMDBUrl);
-      expect(avatar2009Result.allSources.length).toBeGreaterThanOrEqual(1);
-      expect(avatar2009Result.name).toBe("avatar");
-      expect(avatar2009Result.worldWideName).toBe("avatar");
-      expect(avatar2009Result.otherNames.length).toBeGreaterThan(10);
-      expect(avatar2009Result.titleYear).toBe(2009);
-      expect(avatar2009Result.genres).toHaveLength(4);
-      [Genre.Action, Genre.Adventure, Genre.Fantasy, Genre.SciFi].forEach(
-        (item) => expect(avatar2009Result.genres).toContain(item)
-      );
-      expect(avatar2009Result.directors).toHaveLength(1);
-      const director = avatar2009Result.directors[0];
-      expect(director.name).toBe("james cameron");
-      expect(director.source?.sourceId).toBe("nm0000116");
+  titlesToTest.forEach((testData) => {
+    test(
+      `check ${testData.name} ${testData.titleYear} result`,
+      async () => {
+        const resolver = new IMDBTitleDetailsResolver(testData.url);
+        const result = await resolver.getDetails();
+        expect(result).not.toBe(undefined);
+        if (!result) {
+          return;
+        }
+        expect(result.detailsLang).toBe(Language.English);
+        expect(result.mainSource.sourceId).toBe(testData.sourceId);
+        expect(result.mainSource.sourceType).toBe(Source.IMDB);
+        expect(result.mainSource.sourceUrl).toBe(testData.url);
+        expect(result.allSources.length).toBeGreaterThanOrEqual(
+          testData.sourcesMinLength
+        );
+        expect(result.name).toBe(testData.name);
+        expect(result.worldWideName).toBe(testData.name);
+        expect(result.otherNames.length).toBeGreaterThan(
+          testData.otherNamesMinLength
+        );
+        expect(result.titleYear).toBe(testData.titleYear);
+        expect(result.genres).toHaveLength(testData.genres.length);
+        testData.genres.forEach((item) =>
+          expect(result.genres).toContain(item)
+        );
+        expect(result.directors).toHaveLength(testData.directors.length);
+        const director = result.directors[0];
+        expect(director.name).toBe(testData.directors.firstOneName);
+        expect(director.source?.sourceId).toBe(testData.directors.firstOneId);
 
-      expect(avatar2009Result.writers).toHaveLength(1);
-      const writer = avatar2009Result.writers[0];
-      expect(writer.name).toBe("james cameron");
-      expect(writer.extraInfo).toBe("(written by)");
-      expect(writer.source?.sourceId).toBe("nm0000116");
-      expect(avatar2009Result.mainType).toBe(TitleMainType.Movie);
-      expect(avatar2009Result.plot).toContain(
-        "a paraplegic marine dispatched to the moon"
-      );
-      expect(avatar2009Result.casts.length).toBeGreaterThan(20);
-      const firstCast = avatar2009Result.casts[0];
-      expect(firstCast.name).toBe("sam worthington");
-      expect(firstCast.source?.sourceId).toBe("nm0941777");
-      expect(firstCast.roles.length).toBe(1);
-      expect(firstCast.roles[0].name).toBe("jake sully");
-      const kevinDorman = avatar2009Result.casts.find(
-        (c) => c.name === "kevin dorman"
-      );
-      expect(kevinDorman?.roles.length).toBe(2);
-      expect(kevinDorman?.roles[0].name).toBe("tractor operator");
+        expect(result.writers).toHaveLength(testData.writers.length);
+        const writer = result.writers[0];
+        expect(writer.name).toBe(testData.writers.firstOneName);
+        if (testData.writers.firstOneExtraInfo) {
+          expect(writer.extraInfo).toBe(testData.writers.firstOneExtraInfo);
+        }
+        expect(writer.source?.sourceId).toBe(testData.writers.firstONeSourceId);
+        expect(result.mainType).toBe(testData.mainType);
+        expect(result.plot).toContain(testData.plotContains);
+        expect(result.casts.length).toBeGreaterThan(testData.casts.minLength);
+        for (const castData of testData.casts.tests) {
+          const cast = castData.finderF
+            ? result.casts.find(castData.finderF)
+            : result.casts[castData.index || 0];
+          expect(cast).not.toBe(undefined);
+          if (!cast) {
+            return;
+          }
+          expect(cast.name).toBe(castData.name);
+          if (castData.sourceId) {
+            expect(cast.source?.sourceId).toBe(castData.sourceId);
+          }
+          expect(cast.roles.length).toBe(castData.rolesLength);
+          expect(cast.roles[0].name).toBe(castData.firstRoleName);
+        }
 
-      const mainRate = avatar2009Result.mainRate;
-      expect(mainRate.rate).toBe(7.9);
-      expect(mainRate.votesCount).toBeGreaterThan(1100000);
-      expect(mainRate.rateSource).toBe(Source.IMDB);
-      expect(mainRate.assortedByRate).toHaveLength(10);
-      expect(mainRate.assortedByGender?.allGenders?.allAges?.rate).toBe(7.9);
-      expect(avatar2009Result.producers).toHaveLength(8);
-      expect(avatar2009Result.allRates.length).toBeGreaterThanOrEqual(1);
-      expect(avatar2009Result.dates.isEnded).toBe(false);
-      expect(avatar2009Result.dates.startYear).toBe(2009);
-      expect(avatar2009Result.dates.startDate.getFullYear()).toBe(2009);
-      expect(avatar2009Result.dates.startCountry).toBe("uk");
-      expect(avatar2009Result.allReleaseDates.length).toBeGreaterThanOrEqual(1);
-      expect(avatar2009Result.ageCategoryTitle).toBe("pg-13");
-      expect(avatar2009Result.languages[0]).toBe("english");
-      expect(avatar2009Result.languages[1]).toBe("spanish");
-      expect(avatar2009Result.countriesOfOrigin[0]).toBe("united states");
-      expect(avatar2009Result.posterImage.url).toBe(
-        "https://m.media-amazon.com/images/M/MV5BMTYwOTEwNjAzMl5BMl5BanBnXkFtZTcwODc5MTUwMw@@.jpg"
-      );
-      expect(
-        avatar2009Result.posterImage.thumbnails?.length
-      ).toBeGreaterThanOrEqual(3);
-      expect(avatar2009Result.allImages.length).toBeGreaterThanOrEqual(1);
+        const mainRate = result.mainRate;
+        expect(mainRate.rate).toBe(testData.mainRate.rate);
+        expect(mainRate.votesCount).toBeGreaterThan(
+          testData.mainRate.minVotesCount
+        );
+        expect(mainRate.rateSource).toBe(Source.IMDB);
+        expect(mainRate.assortedByRate).toHaveLength(
+          testData.mainRate.assortedByRateLength
+        );
+        expect(mainRate.assortedByGender?.allGenders?.allAges?.rate).toBe(
+          testData.mainRate.rate
+        );
+        expect(result.producers).toHaveLength(testData.producesLength);
+        expect(result.allRates.length).toBeGreaterThanOrEqual(
+          testData.allRatesMinLength
+        );
+        expect(result.dates.isEnded).toBe(testData.dates.isEnded);
+        expect(result.dates.startYear).toBe(testData.dates.startYear);
+        expect(result.dates.startDate.getFullYear()).toBe(
+          testData.dates.startYear
+        );
+        expect(result.dates.startCountry).toBe(testData.dates.startCountry);
+        expect(result.allReleaseDates.length).toBeGreaterThanOrEqual(
+          testData.allReleaseDatesMinLength
+        );
 
-      expect(avatar2009Result.boxOffice?.budget).toBe(237000000);
-      expect(avatar2009Result.boxOffice?.opening.amount).toBe(77025481);
-      expect(avatar2009Result.boxOffice?.opening.date.getFullYear()).toBe(2009);
-      expect(avatar2009Result.boxOffice?.worldwide).toBeGreaterThanOrEqual(
-        2847379794
-      );
-      expect(avatar2009Result.boxOffice?.mainCountries.amount).toBe(760507625);
+        expect(result.ageCategoryTitle).toBe(testData.ageCategory);
+        Array.from(Array(testData.languages?.length)).map((v, i) => {
+          expect(result.languages[i]).toBe(testData.languages[i]);
+        });
+        expect(result.countriesOfOrigin[0]).toBe(
+          testData.firstCountriesOfOrigin
+        );
+        expect(result.posterImage.url).toBe(testData.posterImageUrl);
+        expect(result.posterImage.thumbnails?.length).toBeGreaterThanOrEqual(
+          testData.posterImageThumbnailsMinLength
+        );
+        expect(result.allImages.length).toBeGreaterThanOrEqual(
+          testData.allImagesMinLength
+        );
 
-      expect(avatar2009Result.productionCompanies[0].name).toBe(
-        "twentieth century fox"
-      );
-      expect(avatar2009Result.productionCompanies.length).toBe(3);
-      const expectedStorylineStart =
-        "When his brother is killed in a robbery, paraplegic Marine".toLowerCase();
-      expect(
-        avatar2009Result.storyline.slice(0, expectedStorylineStart.length)
-      ).toBe(expectedStorylineStart);
+        expect(result.boxOffice?.budget).toBe(testData.boxofficeBudget);
+        expect(result.boxOffice?.opening.amount).toBe(testData.openingAmount);
+        expect(result.boxOffice?.opening.date.getFullYear()).toBe(
+          testData.openingDateYear
+        );
+        expect(result.boxOffice?.worldwide).toBeGreaterThanOrEqual(
+          testData.worldWideSellMin
+        );
+        expect(result.boxOffice?.mainCountries.amount).toBeGreaterThanOrEqual(
+          testData.mainCountriesSellMin
+        );
 
-      expect(avatar2009Result.taglines.length).toBe(1);
-      expect(avatar2009Result.taglines[0]).toBe("enter the world");
-      expect(avatar2009Result.runtime.title).toBe("2 hours 42 minutes");
-      expect(avatar2009Result.runtime.hours).toBe(2);
-      expect(avatar2009Result.runtime.minutes).toBe(42);
-      expect(avatar2009Result.keywords.length).toBeGreaterThan(4);
-      expect(avatar2009Result.keywords.includes("spiritualism")).toBe(true);
+        expect(result.productionCompanies[0].name).toBe(
+          testData.firstProductionCompanyName
+        );
+        expect(result.productionCompanies.length).toBe(
+          testData.productionCompaniesLength
+        );
+        const expectedStorylineStart = testData.storylineStart;
+        expect(result.storyline.slice(0, expectedStorylineStart.length)).toBe(
+          expectedStorylineStart
+        );
 
-      // posters & still frame images length
-      expect(
-        avatar2009Result.allImages.filter(
-          (i) => i.type === ImageType.Poster && !!i.url
-        ).length
-      ).toBeGreaterThanOrEqual(17);
+        expect(result.taglines.length).toBeGreaterThanOrEqual(
+          testData.taglinesMinLength
+        );
+        expect(result.taglines[0]).toBe(testData.firstTagline);
+        expect(result.runtime.title).toBe(testData.runtimeTitle);
+        expect(result.runtime.hours).toBe(testData.runtimeHours);
+        expect(result.runtime.minutes).toBe(testData.runtimeMinutes);
+        expect(result.keywords.length).toBeGreaterThanOrEqual(
+          testData.keywordsMinLength
+        );
+        expect(result.keywords.includes(testData.onOfKeywords)).toBe(true);
 
-      expect(
-        avatar2009Result.allImages.filter(
-          (i) => i.type === ImageType.StillFrame && !!i.url
-        ).length
-      ).toBeGreaterThanOrEqual(48);
+        // posters & still frame images length
+        expect(
+          result.allImages.filter((i) => i.type === ImageType.Poster && !!i.url)
+            .length
+        ).toBeGreaterThanOrEqual(testData.postersMinLength);
 
-      expect(avatar2009Result.awards.length).toBeGreaterThan(200);
-      expect(avatar2009Result.awardsSummary.oscarWins).toBe(3);
-      expect(avatar2009Result.awardsSummary.totalNominations).toBeGreaterThan(
-        200
-      );
-    },
-    200 * 1000
-  );
+        expect(
+          result.allImages.filter(
+            (i) => i.type === ImageType.StillFrame && !!i.url
+          ).length
+        ).toBeGreaterThanOrEqual(testData.stillFrameMinLength);
+
+        expect(result.awards.length).toBeGreaterThan(testData.awardsMinLength);
+        expect(result.awardsSummary.oscarWins).toBe(testData.oscars);
+        expect(result.awardsSummary.totalNominations).toBeGreaterThan(
+          testData.minNominations
+        );
+      },
+      200 * 1000
+    );
+  });
 });
