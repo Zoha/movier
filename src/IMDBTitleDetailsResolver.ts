@@ -1042,13 +1042,19 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       return cacheDataManager.data as string[];
     }
     const $ = this.taglinesPageCheerio;
-    const taglines: string[] = [];
+    let taglines: string[] = [];
 
     $("#taglines_content")
       .find(".soda")
       .each(function () {
         taglines.push(formatHTMLText($(this).text()));
       });
+    if (
+      taglines.length === 1 &&
+      taglines[0]?.includes("we don't have any taglines")
+    ) {
+      taglines = [];
+    }
     return cacheDataManager.cacheAndReturnData(taglines);
   }
 

@@ -40,12 +40,13 @@ export interface ITitleTestData {
     minVotesCount: number;
     assortedByRateLength: number;
   };
-  producesLength: number;
+  producersMinLength: number;
   allRatesMinLength: number;
   dates: {
     isEnded: boolean;
     startYear: number;
     startCountry: string;
+    endYear: number;
   };
   allReleaseDatesMinLength: number;
   ageCategory: string;
@@ -73,6 +74,7 @@ export interface ITitleTestData {
   stillFrameMinLength: number;
   awardsMinLength: number;
   oscars: number;
+  emmys: number;
   minNominations: number;
 }
 
@@ -124,12 +126,13 @@ const titlesToTest: ITitleTestData[] = [
       minVotesCount: 1100000,
       assortedByRateLength: 10,
     },
-    producesLength: 8,
+    producersMinLength: 8,
     allRatesMinLength: 1,
     dates: {
       isEnded: false,
       startYear: 2009,
       startCountry: "uk",
+      endYear: 0,
     },
     allReleaseDatesMinLength: 1,
     ageCategory: "pg-13",
@@ -159,7 +162,95 @@ const titlesToTest: ITitleTestData[] = [
     stillFrameMinLength: 48,
     awardsMinLength: 200,
     oscars: 3,
+    emmys: 0,
     minNominations: 200,
+  },
+  {
+    url: "https://www.imdb.com/title/tt0944947/",
+    name: "game of thrones",
+    worldWideName: "got",
+    sourceId: "tt0944947",
+    titleYear: 2011,
+    sourcesMinLength: 1,
+    otherNamesMinLength: 30,
+    genres: [Genre.Action, Genre.Adventure, Genre.Fantasy, Genre.Drama],
+    directors: {
+      length: 19,
+      firstOneName: "david nutter",
+      firstOneId: "nm0638354",
+    },
+    writers: {
+      length: 23,
+      firstOneName: "david benioff",
+      firstOneExtraInfo: "(created by) (73 episodes, 2011-2019)",
+      firstONeSourceId: "nm1125275",
+    },
+    mainType: TitleMainType.Series,
+    plotContains:
+      "nine noble families fight for control over the lands of westeros,",
+    casts: {
+      minLength: 50,
+      tests: [
+        {
+          index: 0,
+          name: "peter dinklage",
+          sourceId: "nm0227759",
+          rolesLength: 1,
+          firstRoleName: "tyrion lannister",
+        },
+        {
+          index: 5,
+          name: "maisie williams",
+          sourceId: "nm3586035",
+          rolesLength: 1,
+          firstRoleName: "arya stark",
+        },
+      ],
+    },
+    mainRate: {
+      rate: 9.3,
+      minVotesCount: 1967333,
+      assortedByRateLength: 10,
+    },
+    producersMinLength: 8,
+    allRatesMinLength: 1,
+    dates: {
+      isEnded: true,
+      startYear: 2011,
+      startCountry: "south korea",
+      endYear: 0,
+    },
+    allReleaseDatesMinLength: 20,
+    ageCategory: "tv-ma",
+    languages: ["english"],
+    firstCountriesOfOrigin: "united states",
+    // till here
+    posterImageUrl:
+      "https://m.media-amazon.com/images/M/MV5BYTRiNDQwYzAtMzVlZS00NTI5LWJjYjUtMzkwNTUzMWMxZTllXkEyXkFqcGdeQXVyNDIzMzcwNjc@.jpg",
+    posterImageThumbnailsMinLength: 3,
+    allImagesMinLength: 48,
+    boxofficeBudget: 0,
+    openingAmount: 0,
+    openingDateYear: 0,
+    worldWideSellMin: 0,
+    mainCountriesSellMin: 0,
+    firstProductionCompanyName: "home box office (hbo)",
+    productionCompaniesLength: 5,
+    storylineStart:
+      "in the mythical continent of westeros, several powerful families fight for control of the seven kingdoms",
+    taglinesMinLength: 5,
+    firstTagline: "winter is coming.",
+    runtimeTitle: "57 minutes",
+    runtimeHours: 0,
+    runtimeMinutes: 57,
+    keywordsMinLength: 5,
+    onOfKeywords: "based on novel",
+    postersMinLength: 48,
+    stillFrameMinLength: 48,
+    awardsMinLength: 200,
+    oscars: 0,
+    emmys: 59,
+    minNominations: 632,
   },
 ];
 
@@ -182,7 +273,7 @@ describe("imdb resolver", () => {
           testData.sourcesMinLength
         );
         expect(result.name).toBe(testData.name);
-        expect(result.worldWideName).toBe(testData.name);
+        expect(result.worldWideName).toBe(testData.worldWideName);
         expect(result.otherNames.length).toBeGreaterThan(
           testData.otherNamesMinLength
         );
@@ -234,7 +325,9 @@ describe("imdb resolver", () => {
         expect(mainRate.assortedByGender?.allGenders?.allAges?.rate).toBe(
           testData.mainRate.rate
         );
-        expect(result.producers).toHaveLength(testData.producesLength);
+        expect(result.producers.length).toBeGreaterThanOrEqual(
+          testData.producersMinLength
+        );
         expect(result.allRates.length).toBeGreaterThanOrEqual(
           testData.allRatesMinLength
         );
@@ -243,6 +336,9 @@ describe("imdb resolver", () => {
         expect(result.dates.startDate.getFullYear()).toBe(
           testData.dates.startYear
         );
+        if (testData.dates.endYear) {
+          expect(result.dates.endYear).toBe(testData.dates.endYear);
+        }
         expect(result.dates.startCountry).toBe(testData.dates.startCountry);
         expect(result.allReleaseDates.length).toBeGreaterThanOrEqual(
           testData.allReleaseDatesMinLength
@@ -263,17 +359,19 @@ describe("imdb resolver", () => {
           testData.allImagesMinLength
         );
 
-        expect(result.boxOffice?.budget).toBe(testData.boxofficeBudget);
-        expect(result.boxOffice?.opening.amount).toBe(testData.openingAmount);
-        expect(result.boxOffice?.opening.date.getFullYear()).toBe(
-          testData.openingDateYear
-        );
-        expect(result.boxOffice?.worldwide).toBeGreaterThanOrEqual(
-          testData.worldWideSellMin
-        );
-        expect(result.boxOffice?.mainCountries.amount).toBeGreaterThanOrEqual(
-          testData.mainCountriesSellMin
-        );
+        if (testData.boxofficeBudget) {
+          expect(result.boxOffice?.budget).toBe(testData.boxofficeBudget);
+          expect(result.boxOffice?.opening.amount).toBe(testData.openingAmount);
+          expect(result.boxOffice?.opening.date.getFullYear()).toBe(
+            testData.openingDateYear
+          );
+          expect(result.boxOffice?.worldwide).toBeGreaterThanOrEqual(
+            testData.worldWideSellMin
+          );
+          expect(result.boxOffice?.mainCountries.amount).toBeGreaterThanOrEqual(
+            testData.mainCountriesSellMin
+          );
+        }
 
         expect(result.productionCompanies[0].name).toBe(
           testData.firstProductionCompanyName
@@ -312,6 +410,7 @@ describe("imdb resolver", () => {
 
         expect(result.awards.length).toBeGreaterThan(testData.awardsMinLength);
         expect(result.awardsSummary.oscarWins).toBe(testData.oscars);
+        expect(result.awardsSummary.emmyWins).toBe(testData.emmys);
         expect(result.awardsSummary.totalNominations).toBeGreaterThan(
           testData.minNominations
         );
