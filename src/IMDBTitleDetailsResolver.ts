@@ -204,7 +204,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       keywords: this.keywords,
       awards: this.awards,
       awardsSummary: this.awardsSummary,
-      otherLangs: [],
     };
 
     return res;

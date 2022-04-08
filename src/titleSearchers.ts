@@ -6,17 +6,19 @@ import { IMDB_TITLE_SEARCH_URL } from "./constants";
 import { convertIMDBPathToIMDBUrl } from "./utils/convertIMDBPathToIMDBUrl";
 import { formatHTMLText } from "./utils/formatHTMLText";
 
-export async function findTitleWithName(
+export type SearchTitleByNameOptions = {
+  exactMatch?: boolean;
+  specificType?: TitleMainType;
+};
+
+export async function searchTitleByName(
   queryName: string,
-  {
-    exactMatch = false,
-    specificType,
-  }: { exactMatch?: boolean; specificType?: TitleMainType } = {}
+  { exactMatch = false, specificType }: SearchTitleByNameOptions = {}
 ): Promise<IFoundedTitleDetails[]> {
   queryName = queryName.toLowerCase();
   // in feature we can add more sources for finding titles
   // for now we just using imdb searcher
-  const imdbResult = await searchForTitleInIMDBWithName(queryName, exactMatch);
+  const imdbResult = await searchForTitleInIMDBByName(queryName, exactMatch);
 
   // do sort and filters
   const finalResult = imdbResult
@@ -29,7 +31,7 @@ export async function findTitleWithName(
   return finalResult;
 }
 
-async function searchForTitleInIMDBWithName(
+async function searchForTitleInIMDBByName(
   queryName: string,
   exactMatch = false
 ): Promise<IFoundedTitleDetails[]> {

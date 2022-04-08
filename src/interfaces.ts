@@ -39,7 +39,6 @@ export interface ITitle {
   keywords: string[];
   awards: IAwardDetails[];
   awardsSummary: IAwardsSummaryDetails;
-  otherLangs: ITitle[];
 }
 
 export interface ITitleLocale {
