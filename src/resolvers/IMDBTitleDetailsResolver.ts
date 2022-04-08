@@ -1,4 +1,4 @@
-import { ResolverCacheManager } from "./utils/ResolverCacheManager";
+import { ResolverCacheManager } from "../utils/ResolverCacheManager";
 import { load as loadCheerio, Cheerio, CheerioAPI, Element } from "cheerio";
 import axios from "axios";
 import {
@@ -8,7 +8,7 @@ import {
   Language,
   Source,
   TitleMainType,
-} from "./enums";
+} from "../enums";
 import {
   ICastDetails,
   IPersonDetails,
@@ -27,10 +27,10 @@ import {
   IRuntimeDetails,
   IAwardDetails,
   IAwardsSummaryDetails,
-} from "./interfaces";
+} from "../interfaces";
 import { camelCase } from "change-case";
-import { formatHTMLText } from "./utils/formatHTMLText";
-import { convertIMDBPathToIMDBUrl } from "./utils/convertIMDBPathToIMDBUrl";
+import { formatHTMLText } from "../utils/formatHTMLText";
+import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import dayjs from "dayjs";
 
 export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
@@ -515,11 +515,11 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
           const secondTdText = el.find("td").eq(3).text();
           const [, asWho] = /\(as\s([^)]+)\)/.exec(secondTdText) || [];
           const otherNames = asWho ? [formatHTMLText(asWho)] : [];
-          const imageThumbnailUrl = el
+          const thumbnailImageUrl = el
             .find("td:eq(0) img")
             .first()
             .attr("loadlate");
-          return { otherNames, roles, imageThumbnailUrl };
+          return { otherNames, roles, thumbnailImageUrl };
         },
         {
           nameAElementSelector: "td:eq(1) a:eq(0)",

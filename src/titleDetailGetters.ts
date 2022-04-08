@@ -4,7 +4,7 @@ import {
   ITitleDetailsResolver,
 } from "./interfaces";
 import { Source } from "./enums";
-import { IMDBTitleDetailsResolver } from "./IMDBTitleDetailsResolver";
+import { IMDBTitleDetailsResolver } from "./resolvers/IMDBTitleDetailsResolver";
 import { guessSourceTypeByUrl } from "./utils/guessSourceTypeByUrl";
 import { searchTitleByName, SearchTitleByNameOptions } from "./titleSearchers";
 import { convertIMDBTitleIdToUrl } from "./utils/convertIMDBTitleIdToUrl";

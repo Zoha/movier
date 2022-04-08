@@ -69,7 +69,7 @@ export interface IRoleDetails {
 export interface ICastDetails extends IPersonDetails {
   roles: IRoleDetails[];
   otherNames?: string[];
-  imageThumbnailUrl?: string;
+  thumbnailImageUrl?: string;
 }
 
 export interface IRateAndVotesCount {
@@ -155,7 +155,7 @@ export interface IFoundedTitleDetails {
   url: string;
   titleType: TitleMainType;
   matchScore: number;
-  thumbnailImage: string;
+  thumbnailImageUrl: string;
 }
 
 export interface IRuntimeDetails {
@@ -190,4 +190,8 @@ export interface IAwardsSummaryDetails {
 
 export interface ITitleDetailsResolver {
   getDetails(): Promise<ITitle | undefined>;
+}
+
+export interface ITitleSearchResolver {
+  getResult(): Promise<IFoundedTitleDetails[]>;
 }
