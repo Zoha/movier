@@ -7,6 +7,7 @@ import { formatHTMLText } from "../utils/formatHTMLText";
 import { Source, TitleMainType } from "../enums";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import { SearchTitleByNameOptions } from "../titleSearchers";
+import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
 
 export class IMDBTitleSearchResolver implements ITitleSearchResolver {
   private queryName: string;
@@ -134,7 +135,11 @@ export class IMDBTitleSearchResolver implements ITitleSearchResolver {
 
         // push to the final list
         moviesList.push({
-          source: Source.IMDB,
+          source: {
+            sourceId: extractIMDBIdFromUrl(url, "tt"),
+            sourceType: Source.IMDB,
+            sourceUrl: url,
+          },
           name,
           aka,
           titleYear,

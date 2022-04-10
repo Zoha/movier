@@ -148,7 +148,7 @@ export interface IImageDetails {
 }
 
 export interface IFoundedTitleDetails {
-  source: Source;
+  source: ISourceDetails;
   name: string;
   titleYear: number;
   aka: string;

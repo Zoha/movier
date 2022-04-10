@@ -254,7 +254,7 @@ const titlesToTest: ITitleTestData[] = [
   },
 ];
 
-describe("imdb resolver", () => {
+describe("imdb title details resolver", () => {
   titlesToTest.forEach((testData) => {
     test(
       `check ${testData.name} ${testData.titleYear} result`,

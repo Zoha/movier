@@ -32,6 +32,7 @@ import { camelCase } from "change-case";
 import { formatHTMLText } from "../utils/formatHTMLText";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import dayjs from "dayjs";
+import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
 
 export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private url: string;
@@ -209,17 +210,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return res;
   }
 
-  extractIdFromUrl(fullUrl: string, idPrefix: string): string {
-    const matchRegexp = new RegExp(`^${idPrefix}\\d+`);
-    return (
-      fullUrl
-        .replace(/\/$/, "")
-        .split("/")
-        .filter((i) => matchRegexp.test(i))
-        .slice(-1)[0] || ""
-    );
-  }
-
   get mainSourceDetails(): ISourceDetails {
     const cacheDataManager =
       this.resolverCacheManager.load("mainSourceDetails");
@@ -247,7 +237,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       return cacheDataManager.data as string;
     }
     return cacheDataManager.cacheAndReturnData(
-      this.extractIdFromUrl(this.url, "tt")
+      extractIMDBIdFromUrl(this.url, "tt")
     );
   }
 
@@ -363,7 +353,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return {
       sourceType: Source.IMDB,
       sourceUrl,
-      sourceId: this.extractIdFromUrl(sourceUrl, sourceIdPrefix),
+      sourceId: extractIMDBIdFromUrl(sourceUrl, sourceIdPrefix),
     };
   }
 
