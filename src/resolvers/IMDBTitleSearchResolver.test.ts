@@ -10,7 +10,7 @@ describe("imdb title search resolver", () => {
     expect(first.source.sourceId).toBe("tt0499549");
     expect(!!first.aka).toBe(false);
     expect(first.titleYear).toBe(2009);
-    expect(first.url).toBe("https://www.imdb.com/title/tt0499549/");
+    expect(first.url).toContain("https://www.imdb.com/title/tt0499549/");
     expect(!!first.thumbnailImageUrl).toBe(true);
-  });
+  }, 200000);
 });

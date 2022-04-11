@@ -139,7 +139,7 @@ const titlesToTest: ITitleTestData[] = [
     languages: ["english", "spanish"],
     firstCountriesOfOrigin: "united states",
     posterImageUrl:
-      "https://m.media-amazon.com/images/M/MV5BMTYwOTEwNjAzMl5BMl5BanBnXkFtZTcwODc5MTUwMw@@.jpg",
+      "https://m.media-amazon.com/images/M/MV5BZDA0OGQxNTItMDZkMC00N2UyLTg3MzMtYTJmNjg3Nzk5MzRiXkEyXkFqcGdeQXVyMjUzOTY1NTc@.jpg",
     posterImageThumbnailsMinLength: 3,
     allImagesMinLength: 48,
     boxofficeBudget: 237000000,
