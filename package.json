@@ -1,10 +1,12 @@
 {
-  "name": "mo7ie-finder",
+  "name": "movier",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "dist/src/index.js",
+  "types": "dist/src/index.d.ts",
   "license": "MIT",
   "scripts": {
-    "test": "jest --config jest.config.ts"
+    "test": "jest --config jest.config.ts",
+    "prepublish": "tsc"
   },
   "dependencies": {
     "@types/node": "^17.0.21",

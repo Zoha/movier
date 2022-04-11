@@ -3,3 +3,4 @@ yarn-error.log
 .vscode/
 test.ts
 todo.txt
+dist/
