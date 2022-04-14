@@ -1,10 +1,10 @@
-![movier npm package image](https://github.com/Zoha/files/raw/master/movier/images/movier%20package%20image%202.jpg)
+![movier npm package image](https://raw.githubusercontent.com/Zoha/files/master/movier/images/movier%20image%20v1.jpg)
 
 [![Zoha - movier](https://img.shields.io/static/v1?label=Zoha&message=movier&color=green&logo=github)](https://github.com/Zoha/movier "Go to GitHub repo")
 [![stars - movier](https://img.shields.io/github/stars/Zoha/movier?style=social)](https://github.com/Zoha/movier)
 [![forks - movier](https://img.shields.io/github/forks/Zoha/movier?style=social)](https://github.com/Zoha/movier)
 
-[![Movier package CI workflow](https://github.com/Zoha/movier/workflows/Movier%20package%20CI%20workflow/badge.svg)](https://github.com/Zoha/movier/actions?query=workflow:"Movier+package+CI+workflow")
+
 [![GitHub tag](https://img.shields.io/github/tag/Zoha/movier?include_prereleases=&sort=semver&color=green)](https://github.com/Zoha/movier/releases/)
 [![License](https://img.shields.io/badge/License-MIT-green)](#license)
 [![issues - movier](https://img.shields.io/github/issues/Zoha/movier)](https://github.com/Zoha/movier/issues)
