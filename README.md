@@ -1,10 +1,19 @@
 ![movier npm package image](https://github.com/Zoha/files/raw/master/movier/images/movier%20image%20v1.jpg)
 
+[![Zoha - movier](https://img.shields.io/static/v1?label=Zoha&message=movier&color=green&logo=github)](https://github.com/Zoha/movier "Go to GitHub repo")
+[![stars - movier](https://img.shields.io/github/stars/Zoha/movier?style=social)](https://github.com/Zoha/movier)
+[![forks - movier](https://img.shields.io/github/forks/Zoha/movier?style=social)](https://github.com/Zoha/movier)
+
+[![Movier package CI workflow](https://github.com/Zoha/movier/workflows/Movier%20package%20CI%20workflow/badge.svg)](https://github.com/Zoha/movier/actions?query=workflow:"Movier+package+CI+workflow")
+[![GitHub tag](https://img.shields.io/github/tag/Zoha/movier?include_prereleases=&sort=semver&color=green)](https://github.com/Zoha/movier/releases/)
+[![License](https://img.shields.io/badge/License-MIT-green)](#license)
+[![issues - movier](https://img.shields.io/github/issues/Zoha/movier)](https://github.com/Zoha/movier/issues)
+
 # Movier
 
-with movier package you can get movie titles information from IMDB like name, dates, casts, images and all other details that you will need in your node app
+with movier package, you can get movie titles information from IMDB like name, dates, casts, images, and all other details that you will need in your Nodejs app
 
-> note : we suggest to don't use this package directly on production, because we are getting information from IMDB pages content, so this requests are a little bit slow and will get couple of seconds to complete, instead use this package to save the information in your local/db
+> note: we suggest to don't use this package directly on production, because we are getting information from IMDB pages content, so these requests are a little bit slow and will get a couple of seconds to complete, instead use this package to save the information in your local/DB
 
 ## Installation
 
@@ -14,22 +23,23 @@ simply install this package using yarn or npm
 
 or using yarn
 
-    yarn add movier
+    $ yarn add movier
 
 ## Usage
 
 ### Title information
 
-all movie details method finally return a title result that you can see an example on this file
+all movie details methods finally return a [title result](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
+that you can see as an example on this file [here](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
 
-example usage, finding a movie with its name, we also include movie name for better match
+example usage, finding a movie with its name, we also include movie name for a better match
 
     // find a title by name,
     movier("interstellar 2014") // gets details of first match title
 
     // returns full title information  { name, worldWideName, titleYear, genres .... }
 
-other usable methods that exported from package, note that all this methods will return a title details result object
+other useful methods that are exported from the package, note that all these methods will return a [title details result object](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
 
     // find a title and returns the first matched title data
     movier.getTitleDetailsByName("interstellar 2014")
@@ -48,7 +58,7 @@ you can search for a title by its name using this method
     movier.searchTitleByName("interstellar 2014")
     return [{name, titleYear, aka, url, titleType, ....}]
 
-this method returns an array of founded items details
+this method returns an [array of found items details](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTItleSearchResult.json)
 
 ## Test
 
