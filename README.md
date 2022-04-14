@@ -66,6 +66,7 @@ execute tests via `yarn test` command after installing packages
 
 ## Support
 for supporting this package just buy me a coffee :) 
+
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/gbraad)
 
 ## license
