@@ -1,4 +1,4 @@
-![movier npm package image](https://github.com/Zoha/files/raw/master/movier/images/movier%20image%20v1.jpg)
+![movier npm package image](https://github.com/Zoha/files/raw/master/movier/images/movier%20package%20image%202.jpg)
 
 [![Zoha - movier](https://img.shields.io/static/v1?label=Zoha&message=movier&color=green&logo=github)](https://github.com/Zoha/movier "Go to GitHub repo")
 [![stars - movier](https://img.shields.io/github/stars/Zoha/movier?style=social)](https://github.com/Zoha/movier)
