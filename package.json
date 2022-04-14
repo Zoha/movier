@@ -1,9 +1,23 @@
 {
   "name": "movier",
   "version": "1.0.0",
+  "description": "Javascript package for search and get details about IMDB movies and series",
+  "author": "Zoha banam <zoha.banam@gmail.com> (https://www.linkedin.com/in/zoha-banam)",
+  "funding": "https://www.buymeacoffee.com/zoha",
+  "homepage": "https://github.com/Zoha/movier",
   "main": "dist/src/index.js",
   "types": "dist/src/index.d.ts",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Zoha/movier.git"
+  },
+  "keywords": [
+    "imdb",
+    "movie",
+    "series",
+    "tv shows"
+  ],
   "scripts": {
     "test": "jest --config jest.config.ts",
     "prepublish": "tsc"
