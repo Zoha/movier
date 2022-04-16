@@ -4,7 +4,6 @@
 [![stars - movier](https://img.shields.io/github/stars/Zoha/movier?style=social)](https://github.com/Zoha/movier)
 [![forks - movier](https://img.shields.io/github/forks/Zoha/movier?style=social)](https://github.com/Zoha/movier)
 
-
 [![GitHub tag](https://img.shields.io/github/tag/Zoha/movier?include_prereleases=&sort=semver&color=green)](https://github.com/Zoha/movier/releases/)
 [![License](https://img.shields.io/badge/License-MIT-green)](#license)
 [![issues - movier](https://img.shields.io/github/issues/Zoha/movier)](https://github.com/Zoha/movier/issues)
@@ -32,14 +31,7 @@ or using yarn
 all movie details methods finally return a [title result](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
 that you can see as an example on this file [here](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
 
-example usage, finding a movie with its name, we also include movie name for a better match
-
-    // find a title by name,
-    movier("interstellar 2014") // gets details of first match title
-
-    // returns full title information  { name, worldWideName, titleYear, genres .... }
-
-other useful methods that are exported from the package, note that all these methods will return a [title details result object](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
+useful methods that are exported from the package, note that all these methods will return a [title details result object](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
 
     // find a title and returns the first matched title data
     movier.getTitleDetailsByName("interstellar 2014")
@@ -65,7 +57,8 @@ this method returns an [array of found items details](https://raw.githubusercont
 execute tests via `yarn test` command after installing packages
 
 ## Support
-for supporting this package just buy me a coffee :) 
+
+for supporting this package just buy me a coffee :)
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/zoha)
 
