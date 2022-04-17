@@ -450,9 +450,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       return cacheDataManager.data as TitleMainType;
     }
     const $ = this.mainPageCheerio;
-    const metaDataBoxText = $("[data-testid='hero-title-block__metadata']")
-      .text()
-      ?.toLowerCase();
+    const metaDataBoxText =
+      $("[data-testid='hero-title-block__metadata']").text()?.toLowerCase() ||
+      "";
     return cacheDataManager.cacheAndReturnData(
       metaDataBoxText.includes("episode")
         ? TitleMainType.SeriesEpisode
@@ -717,7 +717,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       startCountry: startDateDetails.country,
       startDate: startDateDetails.date,
       startExtraInfo: startDateDetails.extraInfo,
-      startYear: startDateDetails?.date.getUTCFullYear() ?? 2020,
+      startYear: startDateDetails.date?.getUTCFullYear() ?? 2020,
       titleYear: this.titleYear,
       isEnded: this.isEnded,
       ...(this.isEnded

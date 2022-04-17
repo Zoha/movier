@@ -345,7 +345,7 @@ describe("imdb title details resolver", () => {
         );
 
         expect(result.ageCategoryTitle).toBe(testData.ageCategory);
-        Array.from(Array(testData.languages?.length)).map((v, i) => {
+        Array.from(Array(testData.languages?.length)).forEach((v, i) => {
           expect(result.languages[i]).toBe(testData.languages[i]);
         });
         expect(result.countriesOfOrigin[0]).toBe(
