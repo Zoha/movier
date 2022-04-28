@@ -333,7 +333,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   get genres(): Genre[] {
     const genresInNextData =
       this.mainPageNextData.props?.pageProps?.aboveTheFoldData?.genres?.genres?.map(
-        (genre) => genre.text
+        (genre) => genre.text || ""
       ) || [];
 
     const genreEnumValues = Object.values(Genre);
