@@ -1,701 +1,1315 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export interface IMDBNextData {
-  props: Props;
+  props?: Props;
+  page?: string;
+  query?: Query;
+  buildID?: string;
+  assetPrefix?: string;
+  runtimeConfig?: RuntimeConfig;
+  isFallback?: boolean;
+  dynamicIDS?: number[];
+  gssp?: boolean;
+  customServer?: boolean;
+  scriptLoader?: any[];
 }
-export interface Props {
-  pageProps: PageProps;
+
+interface Props {
+  pageProps?: PageProps;
+  nSSP?: boolean;
 }
-export interface PageProps {
-  tconst: string;
-  aboveTheFoldData: AboveTheFoldData;
-  mainColumnData: MainColumnData;
+
+interface PageProps {
+  tconst?: string;
+  aboveTheFoldData?: AboveTheFoldData;
+  mainColumnData?: MainColumnData;
+  requestContext?: RequestContext;
+  cmsContext?: CMSContext;
+  translationContext?: TranslationContext;
   urqlState?: null;
   fetchState?: null;
 }
-export interface AboveTheFoldData {
-  id: string;
-  productionStatus: ProductionStatus;
-  canHaveEpisodes: boolean;
+
+interface AboveTheFoldData {
+  id?: string;
+  productionStatus?: ProductionStatus;
+  canHaveEpisodes?: boolean;
   series?: null;
-  titleText: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  titleType: TitleType;
-  originalTitleText: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  certificate: Certificate;
-  releaseYear: ReleaseYearOrYearRange;
-  releaseDate: ReleaseDate;
-  runtime: Runtime;
-  canRate: CanRate;
-  ratingsSummary: RatingsSummary;
-  meterRanking: MeterRanking;
-  primaryImage: PrimaryImageOrNode;
-  images: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  videos: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  primaryVideos: PrimaryVideos;
-  externalLinks: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  metacritic?: null;
-  keywords: KeywordsOrFilmingLocations;
-  genres: Genres;
-  plot: Plot;
-  plotContributionLink: PlotContributionLinkOrContributionLinkOrImageUploadLinkOrIframeAddReviewLink;
-  credits: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  principalCredits?: PrincipalCreditsEntity[] | null;
-  reviews: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  criticReviewsTotal: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  triviaTotal: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  meta: Meta;
-  castPageTitle: CastPageTitle;
-  creatorsPageTitle?: CreatorsPageTitleEntity[] | null;
-  directorsPageTitle?: null[] | null;
-  countriesOfOrigin: CountriesOfOrigin;
-  production: Production;
-  featuredReviews: FeaturedReviews;
-  __typename: string;
+  titleText?: OriginalTitleText;
+  titleType?: TitleType;
+  originalTitleText?: OriginalTitleText;
+  certificate?: AboveTheFoldDataCertificate;
+  releaseYear?: AboveTheFoldDataReleaseYear;
+  releaseDate?: ReleaseDate;
+  runtime?: AboveTheFoldDataRuntime;
+  canRate?: CanRate;
+  ratingsSummary?: AboveTheFoldDataRatingsSummary;
+  meterRanking?: MeterRanking;
+  primaryImage?: NodeClass;
+  images?: Credits;
+  videos?: Credits;
+  primaryVideos?: PrimaryVideos;
+  externalLinks?: Credits;
+  metacritic?: Metacritic;
+  keywords?: Keywords;
+  genres?: Genres;
+  plot?: Plot;
+  plotContributionLink?: Link;
+  credits?: Credits;
+  principalCredits?: PrincipalCredit[];
+  reviews?: Credits;
+  criticReviewsTotal?: Credits;
+  triviaTotal?: Credits;
+  meta?: Meta;
+  castPageTitle?: CastPageTitle;
+  creatorsPageTitle?: any[];
+  directorsPageTitle?: DirectorsPageTitle[];
+  countriesOfOrigin?: AboveTheFoldDataCountriesOfOrigin;
+  production?: Production;
+  featuredReviews?: AboveTheFoldDataFeaturedReviews;
+  typename?: AboveTheFoldDataTypename;
 }
-export interface ProductionStatus {
-  currentProductionStage: StatusOrCurrentProductionStageOrGenresEntityOrCategoryOrCountryOrCountriesEntityOrSpokenLanguagesEntity;
-  productionStatusHistory?: ProductionStatusHistoryEntity[] | null;
+
+interface CanRate {
+  isRatable?: boolean;
+  typename?: CanRateTypename;
+}
+
+enum CanRateTypename {
+  CanRate = "CanRate",
+}
+
+interface CastPageTitle {
+  edges?: CastPageTitleEdge[];
+  typename?: string;
+}
+
+interface CastPageTitleEdge {
+  node?: DirectorsPageTitleNode;
+  typename?: PurpleTypename;
+}
+
+interface DirectorsPageTitleNode {
+  name?: PurpleName;
+  typename?: string;
+}
+
+interface PurpleName {
+  nameText?: OriginalTitleText;
+  typename?: FluffyTypename;
+}
+
+interface OriginalTitleText {
+  text?: string;
+  typename?: string;
+}
+
+enum FluffyTypename {
+  Name = "Name",
+}
+
+enum PurpleTypename {
+  CreditEdge = "CreditEdge",
+}
+
+interface AboveTheFoldDataCertificate {
+  rating?: Rating;
+  typename?: CertificateTypename;
+}
+
+enum Rating {
+  PG = "PG",
+  PG13 = "PG-13",
+  R = "R",
+}
+
+enum CertificateTypename {
+  Certificate = "Certificate",
+}
+
+interface AboveTheFoldDataCountriesOfOrigin {
+  countries?: PrimaryImageElement[];
+  typename?: string;
+}
+
+interface PrimaryImageElement {
+  id?: string;
+  typename?: string;
+}
+
+interface Credits {
+  total?: number;
+  typename?: string;
+}
+
+interface DirectorsPageTitle {
+  credits?: DirectorsPageTitleNode[];
+  typename?: string;
+}
+
+interface AboveTheFoldDataFeaturedReviews {
+  edges?: PurpleEdge[];
+  typename?: string;
+}
+
+interface PurpleEdge {
+  node?: PurpleNode;
+  typename?: string;
+}
+
+interface PurpleNode {
+  author?: PurpleAuthor;
+  summary?: Summary;
+  text?: PurpleText;
+  authorRating?: number;
+  submissionDate?: Date;
+  typename?: string;
+}
+
+interface PurpleAuthor {
+  nickName?: string;
+  typename?: string;
+}
+
+interface Summary {
+  originalText?: string;
+  typename?: string;
+}
+
+interface PurpleText {
+  originalText?: PlotText;
+  typename?: string;
+}
+
+interface PlotText {
+  plainText?: string;
+  typename?: PlotTextTypename;
+}
+
+enum PlotTextTypename {
+  Markdown = "Markdown",
+}
+
+interface Genres {
+  genres?: CurrentProductionStage[];
+  typename?: GenresTypename;
+}
+
+interface CurrentProductionStage {
+  text?: string;
+  id?: string;
+  typename?: string;
+  event?: PrimaryImageElement;
+  attributes?: any[];
+}
+
+enum GenresTypename {
+  Genres = "Genres",
+}
+
+interface Keywords {
+  total?: number;
+  edges?: KeywordsEdge[];
+  typename?: string;
+}
+
+interface KeywordsEdge {
+  node?: OriginalTitleText;
+  typename?: string;
+}
+
+interface Meta {
+  canonicalID?: string;
+  publicationStatus?: string;
+  typename?: string;
+}
+
+interface Metacritic {
+  metascore?: Metascore;
+  typename?: string;
+}
+
+interface Metascore {
+  score?: number;
+  typename?: string;
+}
+
+interface MeterRanking {
+  currentRank?: number;
+  rankChange?: RankChange;
+  typename?: string;
+}
+
+interface RankChange {
+  changeDirection?: string;
+  difference?: number;
+  typename?: string;
+}
+
+interface Plot {
+  plotText?: PlotText;
+  language?: PrimaryImageElement;
+  typename?: string;
+}
+
+interface Link {
+  url?: string;
+  typename?: string;
+}
+
+interface NodeClass {
+  id?: string;
+  width?: number;
+  height?: number;
+  url?: string;
+  caption?: PlotText;
+  typename?: PrimaryImageTypename;
+}
+
+enum PrimaryImageTypename {
+  Image = "Image",
+  Thumbnail = "Thumbnail",
+}
+
+interface PrimaryVideos {
+  edges?: PrimaryVideosEdge[];
+  typename?: string;
+}
+
+interface PrimaryVideosEdge {
+  node?: FluffyNode;
+  typename?: TentacledTypename;
+}
+
+interface FluffyNode {
+  id?: string;
+  isMature?: boolean;
+  contentType?: PurpleContentType;
+  thumbnail?: NodeClass;
+  runtime?: PurpleRuntime;
+  description?: Description;
+  name?: Description;
+  playbackURLs?: URL[];
+  previewURLs?: URL[];
+  typename?: StickyTypename;
+}
+
+interface PurpleContentType {
+  id?: string;
+  displayName?: NameClass;
+  typename?: ContentTypeTypename;
+}
+
+interface NameClass {
+  value?: string;
+  typename?: DisplayNameTypename;
+}
+
+enum DisplayNameTypename {
+  LocalizedString = "LocalizedString",
+}
+
+enum ContentTypeTypename {
+  VideoContentType = "VideoContentType",
+}
+
+interface Description {
+  value?: string;
+  language?: string;
+  typename?: DisplayNameTypename;
+}
+
+interface URL {
+  displayName?: Description;
+  mimeType?: string;
+  url?: string;
+  typename?: string;
+}
+
+interface PurpleRuntime {
+  value?: number;
+  typename?: IndigoTypename;
+}
+
+enum IndigoTypename {
+  VideoRuntime = "VideoRuntime",
+}
+
+enum StickyTypename {
+  Video = "Video",
+}
+
+enum TentacledTypename {
+  VideoEdge = "VideoEdge",
+}
+
+interface PrincipalCredit {
+  totalCredits?: number;
+  category?: CurrentProductionStage;
+  credits?: Credit[];
+  typename?: string;
+}
+
+interface Credit {
+  name?: FluffyName;
+  attributes?: null;
+  typename?: string;
+}
+
+interface FluffyName {
+  nameText?: OriginalTitleText;
+  id?: string;
+  typename?: FluffyTypename;
+  primaryImage?: NodeClass | null;
+}
+
+interface Production {
+  edges?: ProductionEdge[];
+  typename?: string;
+}
+
+interface ProductionEdge {
+  node?: TentacledNode;
+  typename?: string;
+}
+
+interface TentacledNode {
+  company?: Company;
+  typename?: string;
+}
+
+interface Company {
+  id?: string;
+  companyText?: OriginalTitleText;
+  typename?: string;
+}
+
+interface ProductionStatus {
+  currentProductionStage?: CurrentProductionStage;
+  productionStatusHistory?: ProductionStatusHistory[];
   restriction?: null;
-  __typename: string;
+  typename?: string;
 }
-export interface StatusOrCurrentProductionStageOrGenresEntityOrCategoryOrCountryOrCountriesEntityOrSpokenLanguagesEntity {
-  id: string;
-  text: string;
-  __typename: string;
+
+interface ProductionStatusHistory {
+  status?: CurrentProductionStage;
+  typename?: ProductionStatusHistoryTypename;
 }
-export interface ProductionStatusHistoryEntity {
-  status: StatusOrCurrentProductionStageOrGenresEntityOrCategoryOrCountryOrCountriesEntityOrSpokenLanguagesEntity;
-  __typename: string;
+
+enum ProductionStatusHistoryTypename {
+  ProductionStatusHistory = "ProductionStatusHistory",
 }
-export interface NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory {
-  text: string;
-  __typename: string;
+
+interface AboveTheFoldDataRatingsSummary {
+  aggregateRating?: number | null;
+  voteCount?: number;
+  typename?: RatingsSummaryTypename;
 }
-export interface TitleType {
-  text: string;
-  id: string;
-  isSeries: boolean;
-  isEpisode: boolean;
-  __typename: string;
+
+enum RatingsSummaryTypename {
+  RatingsSummary = "RatingsSummary",
 }
-export interface Certificate {
-  rating: string;
-  __typename: string;
+
+interface ReleaseDate {
+  day?: number;
+  month?: number;
+  year?: number;
+  typename?: string;
+  country?: CurrentProductionStage;
 }
-export interface ReleaseYearOrYearRange {
-  year: number;
-  endYear: number;
-  __typename: string;
+
+interface AboveTheFoldDataReleaseYear {
+  year?: number;
+  endYear?: null;
+  typename?: ReleaseYearTypename;
 }
-export interface ReleaseDate {
-  day: number;
-  month: number;
-  year: number;
-  __typename: string;
+
+enum ReleaseYearTypename {
+  YearRange = "YearRange",
 }
-export interface Runtime {
-  seconds: number;
-  __typename: string;
+
+interface AboveTheFoldDataRuntime {
+  seconds?: number;
+  typename?: IndecentTypename;
 }
-export interface CanRate {
-  isRatable: boolean;
-  __typename: string;
+
+enum IndecentTypename {
+  Runtime = "Runtime",
 }
-export interface RatingsSummary {
-  aggregateRating: number;
-  voteCount: number;
-  __typename: string;
+
+interface TitleType {
+  text?: string;
+  id?: string;
+  isSeries?: boolean;
+  isEpisode?: boolean;
+  typename?: string;
 }
-export interface MeterRanking {
-  currentRank: number;
-  rankChange: RankChange;
-  __typename: string;
+
+enum AboveTheFoldDataTypename {
+  Title = "Title",
 }
-export interface RankChange {
-  changeDirection: string;
-  difference: number;
-  __typename: string;
+
+interface CMSContext {
+  transformedPlacements?: TransformedPlacements;
+  isDebug?: boolean;
 }
-export interface PrimaryImageOrNode {
-  id: string;
-  width: number;
-  height: number;
-  url: string;
-  caption: CaptionOrPlotTextOrOriginalTextOrQuestion;
-  __typename: string;
+
+interface TransformedPlacements {
+  right3?: TransformedPlacementsRight3;
+  right5?: TransformedPlacementsRight5;
 }
-export interface CaptionOrPlotTextOrOriginalTextOrQuestion {
-  plainText: string;
-  __typename: string;
+
+interface TransformedPlacementsRight3 {
+  componentName?: string;
+  arguments?: ContextClass;
+  symphonyMetadata?: SymphonyMetadata;
+  transformedArguments?: TransformedArguments;
 }
-export interface ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies {
-  total: number;
-  __typename: string;
+
+interface ContextClass {
+  the03_ImageTargetURL?: string;
+  urlLabel?: string;
+  the03_ImageSize?: string;
+  heading?: string;
+  blurbContent?: string;
+  blurbPosition?: string;
+  widgetref?: string;
+  widgetType?: string;
+  targetURL?: string;
+  the03_ImageImageID?: string;
+  generatedPrefix?: string;
+  slotName?: string;
 }
-export interface PrimaryVideos {
-  edges?: EdgesEntity[] | null;
-  __typename: string;
+
+interface SymphonyMetadata {
+  requestID?: string;
+  marketplaceID?: string;
+  merchantID?: string;
+  customerID?: string;
+  sessionID?: string;
+  contentID?: string;
+  creativeID?: string;
+  placementID?: string;
+  msoGroupName?: null;
+  msoSlotOrder?: null;
 }
-export interface EdgesEntity {
-  node: Node;
-  __typename: string;
+
+interface TransformedArguments {
+  the03_ImageTargetURL?: string;
+  urlLabel?: string;
+  the03_ImageSize?: string;
+  heading?: string;
+  blurbContent?: string;
+  blurbPosition?: string;
+  widgetref?: string;
+  widgetType?: string;
+  targetURL?: string;
+  the03_ImageImageID?: string;
+  generatedPrefix?: string;
+  slotName?: string;
+  refTag?: string;
+  errors?: Error[];
+  displayTitle?: string;
+  iconName?: string;
+  description?: string;
+  overlayCaption?: string;
+  callToActionText?: string;
+  callToActionURL?: string;
+  linkedImages?: LinkedImage[];
+  the01_ImageSize?: string;
+  the01_ImageImageID?: string;
+  the01_ImageImageIDOverride?: string;
+  the01_ImageRelatedListID?: string;
 }
-export interface Node {
-  id: string;
-  isMature: boolean;
-  contentType: ContentType;
-  thumbnail: ThumbnailOrPrimaryImage;
-  runtime: Runtime1;
-  description: DisplayNameOrDescriptionOrName;
-  name: DisplayNameOrDescriptionOrName;
-  playbackURLs?: PlaybackURLsEntityOrPreviewURLsEntity[] | null;
-  previewURLs?: PlaybackURLsEntityOrPreviewURLsEntity[] | null;
-  __typename: string;
+
+interface Error {
+  code?: string;
+  context?: ContextClass;
 }
-export interface ContentType {
-  id: string;
-  displayName: DisplayNameOrTextOrName;
-  __typename: string;
+
+interface LinkedImage {
+  imageModel?: ImageModel;
+  link?: string;
 }
-export interface DisplayNameOrTextOrName {
-  value: string;
-  __typename: string;
+
+interface ImageModel {
+  url?: string;
+  caption?: string;
+  maxHeight?: number;
+  maxWidth?: number;
 }
-export interface ThumbnailOrPrimaryImage {
-  url: string;
-  height: number;
-  width: number;
-  __typename: string;
+
+interface TransformedPlacementsRight5 {
+  componentName?: string;
+  arguments?: Right5_Arguments;
+  symphonyMetadata?: SymphonyMetadata;
+  transformedArguments?: TransformedArguments;
+  queryTypeFlags?: QueryTypeFlags;
 }
-export interface Runtime1 {
-  value: number;
-  __typename: string;
+
+interface Right5_Arguments {
+  urlLabel?: string;
+  the01_ImageSize?: string;
+  the01_ImageImageID?: string;
+  heading?: string;
+  blurbContent?: string;
+  blurbPosition?: string;
+  the01_ImageImageIDOverride?: string;
+  the01_ImageRelatedListID?: string;
+  widgetref?: string;
+  widgetType?: string;
+  targetURL?: string;
+  generatedPrefix?: string;
+  slotName?: string;
 }
-export interface DisplayNameOrDescriptionOrName {
-  value: string;
-  language: string;
-  __typename: string;
+
+interface QueryTypeFlags {
+  video?: boolean;
 }
-export interface PlaybackURLsEntityOrPreviewURLsEntity {
-  displayName: DisplayNameOrDescriptionOrName;
-  mimeType: string;
-  url: string;
-  __typename: string;
-}
-export interface KeywordsOrFilmingLocations {
-  total: number;
-  edges?: EdgesEntity1[] | null;
-  __typename: string;
-}
-export interface EdgesEntity1 {
-  node: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  __typename: string;
-}
-export interface Genres {
-  genres?:
-    | StatusOrCurrentProductionStageOrGenresEntityOrCategoryOrCountryOrCountriesEntityOrSpokenLanguagesEntity[]
-    | null;
-  __typename: string;
-}
-export interface Plot {
-  plotText: CaptionOrPlotTextOrOriginalTextOrQuestion;
-  language: LanguageOrCountriesEntityOrEventOrNameOrPrimaryImageOrTitleType;
-  __typename: string;
-}
-export interface LanguageOrCountriesEntityOrEventOrNameOrPrimaryImageOrTitleType {
-  id: string;
-  __typename: string;
-}
-export interface PlotContributionLinkOrContributionLinkOrImageUploadLinkOrIframeAddReviewLink {
-  url: string;
-  __typename: string;
-}
-export interface PrincipalCreditsEntity {
-  totalCredits: number;
-  category: StatusOrCurrentProductionStageOrGenresEntityOrCategoryOrCountryOrCountriesEntityOrSpokenLanguagesEntity;
-  credits?: CreditsEntity[] | null;
-  __typename: string;
-}
-export interface CreditsEntity {
-  name: Name;
-  attributes?: null;
-  __typename: string;
-}
-export interface Name {
-  nameText: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  id: string;
-  __typename: string;
-}
-export interface Meta {
-  canonicalId: string;
-  publicationStatus: string;
-  __typename: string;
-}
-export interface CastPageTitle {
-  edges?: EdgesEntity2[] | null;
-  __typename: string;
-}
-export interface EdgesEntity2 {
-  node: NodeOrCreditsEntity;
-  __typename: string;
-}
-export interface NodeOrCreditsEntity {
-  name: Name1;
-  __typename: string;
-}
-export interface Name1 {
-  nameText: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  __typename: string;
-}
-export interface CreatorsPageTitleEntity {
-  credits?: NodeOrCreditsEntity[] | null;
-  __typename: string;
-}
-export interface CountriesOfOrigin {
-  countries?:
-    | LanguageOrCountriesEntityOrEventOrNameOrPrimaryImageOrTitleType[]
-    | null;
-  __typename: string;
-}
-export interface Production {
-  edges?: EdgesEntity3[] | null;
-  __typename: string;
-}
-export interface EdgesEntity3 {
-  node: Node1;
-  __typename: string;
-}
-export interface Node1 {
-  company: Company;
-  __typename: string;
-}
-export interface Company {
-  id: string;
-  companyText: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  __typename: string;
-}
-export interface FeaturedReviews {
-  edges?: EdgesEntity4[] | null;
-  __typename: string;
-}
-export interface EdgesEntity4 {
-  node: Node2;
-  __typename: string;
-}
-export interface Node2 {
-  author: Author;
-  summary: Summary;
-  text: Text;
-  authorRating: number;
-  submissionDate: string;
-  __typename: string;
-}
-export interface Author {
-  nickName: string;
-  __typename: string;
-}
-export interface Summary {
-  originalText: string;
-  __typename: string;
-}
-export interface Text {
-  originalText: CaptionOrPlotTextOrOriginalTextOrQuestion;
-  __typename: string;
-}
-export interface MainColumnData {
-  id: string;
-  wins: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  nominations: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  prestigiousAwardSummary: PrestigiousAwardSummary;
-  ratingsSummary: RatingsSummary1;
-  episodes: Episodes;
-  videos: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  videoStrip: VideoStrip;
-  titleMainImages: TitleMainImages;
-  productionStatus: ProductionStatus;
-  primaryImage: LanguageOrCountriesEntityOrEventOrNameOrPrimaryImageOrTitleType;
-  imageUploadLink: PlotContributionLinkOrContributionLinkOrImageUploadLinkOrIframeAddReviewLink;
-  titleType: LanguageOrCountriesEntityOrEventOrNameOrPrimaryImageOrTitleType;
-  canHaveEpisodes: boolean;
-  cast: Cast;
-  principalCast?: PrincipalCastEntity[] | null;
-  creators?: CreatorsEntity[] | null;
-  directors?: null[] | null;
-  writers?: null[] | null;
-  triviaTotal: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  trivia: Trivia;
-  goofsTotal: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  goofs: Goofs;
-  quotesTotal: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  quotes: Quotes;
-  crazyCredits: CrazyCredits;
-  alternateVersions: AlternateVersions;
-  connections: Connections;
-  soundtrack: Soundtrack;
-  titleText: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  originalTitleText: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  releaseYear: YearsEntityOrReleaseYear;
-  reviews: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  featuredReviews: FeaturedReviews1;
-  canRate: CanRate;
-  iframeAddReviewLink: PlotContributionLinkOrContributionLinkOrImageUploadLinkOrIframeAddReviewLink;
-  faqsTotal: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  faqs: Faqs;
-  releaseDate: ReleaseDate1;
-  countriesOfOrigin: CountriesOfOrigin1;
-  detailsExternalLinks: DetailsExternalLinks;
-  spokenLanguages: SpokenLanguages;
-  akas: Akas;
-  filmingLocations: KeywordsOrFilmingLocations;
-  production: Production;
-  companies: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  productionBudget?: null;
-  lifetimeGross?: null;
-  openingWeekendGross?: null;
-  worldwideGross?: null;
-  technicalSpecifications: TechnicalSpecifications;
-  runtime: Runtime;
+
+interface MainColumnData {
+  id?: string;
+  wins?: Credits;
+  nominations?: Credits;
+  prestigiousAwardSummary?: PrestigiousAwardSummary;
+  ratingsSummary?: MainColumnDataRatingsSummary;
+  episodes?: null;
+  videos?: Credits;
+  videoStrip?: VideoStrip;
+  titleMainImages?: TitleMainImages;
+  productionStatus?: ProductionStatus;
+  primaryImage?: PrimaryImageElement;
+  imageUploadLink?: Link;
+  titleType?: PrimaryImageElement;
+  canHaveEpisodes?: boolean;
+  cast?: Cast;
+  principalCast?: PrincipalCast[];
+  creators?: any[];
+  directors?: Director[];
+  writers?: Director[];
+  isAdult?: boolean;
+  moreLikeThisTitles?: MoreLikeThisTitles;
+  summaries?: Summaries;
+  outlines?: Outlines;
+  synopses?: Outlines;
+  storylineKeywords?: StorylineKeywords;
+  taglines?: Keywords;
+  genres?: Genres;
+  certificate?: MainColumnDataCertificate;
+  parentsGuide?: ParentsGuide;
+  triviaTotal?: Credits;
+  trivia?: Trivia;
+  goofsTotal?: Credits;
+  goofs?: CrazyCredits;
+  quotesTotal?: Credits;
+  quotes?: Quotes;
+  crazyCredits?: CrazyCredits;
+  alternateVersions?: AlternateVersions;
+  connections?: Connections;
+  soundtrack?: Soundtrack;
+  titleText?: OriginalTitleText;
+  originalTitleText?: OriginalTitleText;
+  releaseYear?: AssociatedTitleReleaseYear;
+  reviews?: Credits;
+  featuredReviews?: MainColumnDataFeaturedReviews;
+  canRate?: CanRate;
+  iframeAddReviewLink?: Link;
+  faqsTotal?: Credits;
+  faqs?: Faqs;
+  releaseDate?: ReleaseDate;
+  countriesOfOrigin?: MainColumnDataCountriesOfOrigin;
+  detailsExternalLinks?: DetailsExternalLinks;
+  spokenLanguages?: SpokenLanguages;
+  akas?: Akas;
+  filmingLocations?: Keywords;
+  production?: Production;
+  companies?: Credits;
+  productionBudget?: ProductionBudget;
+  lifetimeGross?: Gross;
+  openingWeekendGross?: OpeningWeekendGross;
+  worldwideGross?: Gross;
+  technicalSpecifications?: TechnicalSpecifications;
+  runtime?: AboveTheFoldDataRuntime;
   series?: null;
-  contributionQuestions: ContributionQuestions;
-  __typename: string;
+  news?: News;
+  contributionQuestions?: ContributionQuestions;
+  typename?: AboveTheFoldDataTypename;
 }
-export interface PrestigiousAwardSummary {
-  nominations: number;
-  wins: number;
-  award: Award;
-  __typename: string;
+
+interface Akas {
+  edges?: KeywordsEdge[];
+  typename?: string;
 }
-export interface Award {
-  text: string;
-  id: string;
-  event: LanguageOrCountriesEntityOrEventOrNameOrPrimaryImageOrTitleType;
-  __typename: string;
+
+interface AlternateVersions {
+  total?: number;
+  edges?: AlternateVersionsEdge[];
+  typename?: string;
 }
-export interface RatingsSummary1 {
-  topRanking: TopRanking;
-  __typename: string;
+
+interface AlternateVersionsEdge {
+  node?: StickyNode;
+  typename?: string;
 }
-export interface TopRanking {
-  id: string;
-  text: DisplayNameOrTextOrName;
-  rank: number;
-  __typename: string;
+
+interface StickyNode {
+  text?: TextElement;
+  typename?: string;
 }
-export interface Episodes {
-  episodes: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  seasons?: SeasonsEntity[] | null;
-  years?: YearsEntityOrReleaseYear[] | null;
-  totalEpisodes: ImagesOrVideosOrExternalLinksOrCreditsOrReviewsOrCriticReviewsTotalOrTriviaTotalOrEpisodesOrTotalEpisodesOrWinsOrNominationsOrGoofsTotalOrQuotesTotalOrFaqsTotalOrCompanies;
-  topRated: TopRated;
-  __typename: string;
+
+interface TextElement {
+  plaidHTML?: string;
+  typename?: PlotTextTypename;
 }
-export interface SeasonsEntity {
-  number: number;
-  __typename: string;
+
+interface Cast {
+  edges?: CastEdge[];
+  typename?: string;
 }
-export interface YearsEntityOrReleaseYear {
-  year: number;
-  __typename: string;
+
+interface CastEdge {
+  node?: PrincipalCastNode;
+  typename?: PurpleTypename;
 }
-export interface TopRated {
-  edges?: EdgesEntity5[] | null;
-  __typename: string;
+
+interface PrincipalCastNode {
+  name?: FluffyName;
+  attributes?: OriginalTitleText[] | null;
+  characters?: NodeCharacter[];
+  episodeCredits?: EpisodeCredits;
+  typename?: CreditTypename;
 }
-export interface EdgesEntity5 {
-  node: Node3;
-  __typename: string;
+
+interface NodeCharacter {
+  name?: string;
+  typename?: CharacterTypename;
 }
-export interface Node3 {
-  ratingsSummary: RatingsSummary2;
-  __typename: string;
+
+enum CharacterTypename {
+  Character = "Character",
 }
-export interface RatingsSummary2 {
-  aggregateRating: number;
-  __typename: string;
+
+interface EpisodeCredits {
+  total?: number;
+  yearRange?: null;
+  typename?: EpisodeCreditsTypename;
 }
-export interface VideoStrip {
-  edges?: EdgesEntity6[] | null;
-  __typename: string;
+
+enum EpisodeCreditsTypename {
+  EpisodeCastConnection = "EpisodeCastConnection",
 }
-export interface EdgesEntity6 {
-  node: Node4;
-  __typename: string;
+
+enum CreditTypename {
+  Cast = "Cast",
 }
-export interface Node4 {
-  id: string;
-  contentType: ContentType1;
-  name: DisplayNameOrTextOrName;
-  runtime: Runtime1;
-  thumbnail: ThumbnailOrPrimaryImage;
-  __typename: string;
+
+interface MainColumnDataCertificate {
+  rating?: Rating;
+  ratingReason?: string;
+  ratingsBody?: PrimaryImageElement;
+  typename?: CertificateTypename;
 }
-export interface ContentType1 {
-  displayName: DisplayNameOrTextOrName;
-  __typename: string;
+
+interface Connections {
+  edges?: ConnectionsEdge[];
+  typename?: string;
 }
-export interface TitleMainImages {
-  total: number;
-  edges?: EdgesEntity7[] | null;
-  __typename: string;
+
+interface ConnectionsEdge {
+  node?: IndigoNode;
+  typename?: string;
 }
-export interface EdgesEntity7 {
-  node: PrimaryImageOrNode;
-  __typename: string;
+
+interface IndigoNode {
+  associatedTitle?: AssociatedTitle;
+  category?: OriginalTitleText;
+  typename?: string;
 }
-export interface Cast {
-  edges?: EdgesEntity8[] | null;
-  __typename: string;
+
+interface AssociatedTitle {
+  id?: string;
+  releaseYear?: AssociatedTitleReleaseYear;
+  titleText?: OriginalTitleText;
+  originalTitleText?: OriginalTitleText;
+  series?: AssociatedTitleSeries;
+  typename?: AboveTheFoldDataTypename;
 }
-export interface EdgesEntity8 {
-  node: NodeOrCreditsEntity1;
-  __typename: string;
+
+interface AssociatedTitleReleaseYear {
+  year?: number;
+  typename?: ReleaseYearTypename;
 }
-export interface NodeOrCreditsEntity1 {
-  name: Name2;
-  attributes?: null;
-  characters?: CharactersEntity[] | null;
-  episodeCredits: EpisodeCredits;
-  __typename: string;
+
+interface AssociatedTitleSeries {
+  series?: SeriesSeries;
+  typename?: string;
 }
-export interface Name2 {
-  id: string;
-  nameText: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  primaryImage: ThumbnailOrPrimaryImage;
-  __typename: string;
+
+interface SeriesSeries {
+  titleText?: OriginalTitleText;
+  originalTitleText?: OriginalTitleText;
+  typename?: AboveTheFoldDataTypename;
 }
-export interface CharactersEntity {
-  name: string;
-  __typename: string;
+
+interface ContributionQuestions {
+  contributionLink?: Link;
+  edges?: any[];
+  typename?: string;
 }
-export interface EpisodeCredits {
-  total: number;
-  yearRange: ReleaseYearOrYearRange;
-  __typename: string;
+
+interface MainColumnDataCountriesOfOrigin {
+  countries?: CurrentProductionStage[];
+  typename?: string;
 }
-export interface PrincipalCastEntity {
-  credits?: NodeOrCreditsEntity1[] | null;
-  __typename: string;
+
+interface CrazyCredits {
+  edges?: AlternateVersionsEdge[];
+  typename?: string;
 }
-export interface CreatorsEntity {
-  totalCredits: number;
-  category: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  credits?: CreditsEntity[] | null;
-  __typename: string;
+
+interface DetailsExternalLinks {
+  edges?: DetailsExternalLinksEdge[];
+  total?: number;
+  typename?: string;
 }
-export interface Trivia {
-  edges?: EdgesEntity9[] | null;
-  __typename: string;
+
+interface DetailsExternalLinksEdge {
+  node?: IndecentNode;
+  typename?: string;
 }
-export interface EdgesEntity9 {
-  node: Node5;
-  __typename: string;
+
+interface IndecentNode {
+  url?: string;
+  label?: string;
+  externalLinkRegion?: null;
+  typename?: string;
 }
-export interface Node5 {
-  text: TextOrCommentsEntityOrOriginalText;
+
+interface Director {
+  totalCredits?: number;
+  category?: OriginalTitleText;
+  credits?: Credit[];
+  typename?: string;
+}
+
+interface Faqs {
+  edges?: FaqsEdge[];
+  typename?: string;
+}
+
+interface FaqsEdge {
+  node?: HilariousNode;
+  typename?: string;
+}
+
+interface HilariousNode {
+  id?: string;
+  question?: PlotText;
+  typename?: string;
+}
+
+interface MainColumnDataFeaturedReviews {
+  edges?: FluffyEdge[];
+  typename?: string;
+}
+
+interface FluffyEdge {
+  node?: AmbitiousNode;
+  typename?: string;
+}
+
+interface AmbitiousNode {
+  id?: string;
+  author?: FluffyAuthor;
+  summary?: Summary;
+  text?: FluffyText;
+  authorRating?: number;
+  submissionDate?: Date;
+  helpfulness?: Helpfulness;
+  typename?: string;
+}
+
+interface FluffyAuthor {
+  nickName?: string;
+  userID?: string;
+  typename?: string;
+}
+
+interface Helpfulness {
+  upVotes?: number;
+  downVotes?: number;
+  typename?: string;
+}
+
+interface FluffyText {
+  originalText?: TextElement;
+  typename?: string;
+}
+
+interface Gross {
+  total?: Total;
+  typename?: string;
+}
+
+interface Total {
+  amount?: number;
+  currency?: string;
+  typename?: string;
+}
+
+interface MoreLikeThisTitles {
+  edges?: MoreLikeThisTitlesEdge[];
+  typename?: string;
+}
+
+interface MoreLikeThisTitlesEdge {
+  node?: CunningNode;
+  typename?: HilariousTypename;
+}
+
+interface CunningNode {
+  id?: string;
+  titleText?: OriginalTitleText;
+  titleType?: CurrentProductionStage;
+  originalTitleText?: OriginalTitleText;
+  primaryImage?: NodeClass;
+  releaseYear?: AboveTheFoldDataReleaseYear;
+  ratingsSummary?: AboveTheFoldDataRatingsSummary;
+  runtime?: AboveTheFoldDataRuntime | null;
+  certificate?: AboveTheFoldDataCertificate | null;
+  canRate?: CanRate;
+  titleCardGenres?: TitleCardGenres;
+  canHaveEpisodes?: boolean;
+  primaryWatchOption?: PrimaryWatchOption | null;
+  typename?: AboveTheFoldDataTypename;
+}
+
+interface PrimaryWatchOption {
+  additionalWatchOptionsCount?: number;
+  typename?: PrimaryWatchOptionTypename;
+}
+
+enum PrimaryWatchOptionTypename {
+  PrimaryWatchOption = "PrimaryWatchOption",
+}
+
+interface TitleCardGenres {
+  genres?: OriginalTitleText[];
+  typename?: GenresTypename;
+}
+
+enum HilariousTypename {
+  MoreLikeThisEdge = "MoreLikeThisEdge",
+}
+
+interface News {
+  edges?: NewsEdge[];
+  typename?: string;
+}
+
+interface NewsEdge {
+  node?: MagentaNode;
+  typename?: string;
+}
+
+interface MagentaNode {
+  id?: string;
+  articleTitle?: PlotText;
+  date?: Date;
+  image?: NodeClass;
+  source?: Source;
+  typename?: string;
+}
+
+interface Source {
+  homepage?: Homepage;
+  typename?: string;
+}
+
+interface Homepage {
+  label?: string;
+  typename?: string;
+}
+
+interface OpeningWeekendGross {
+  gross?: Gross;
+  weekendEndDate?: Date;
+  typename?: string;
+}
+
+interface Outlines {
+  edges?: OutlinesEdge[];
+  typename?: string;
+}
+
+interface OutlinesEdge {
+  node?: FriskyNode;
+  typename?: string;
+}
+
+interface FriskyNode {
+  plotText?: TextElement;
+  typename?: string;
+}
+
+interface ParentsGuide {
+  guideItems?: Credits;
+  typename?: string;
+}
+
+interface PrestigiousAwardSummary {
+  nominations?: number;
+  wins?: number;
+  award?: CurrentProductionStage;
+  typename?: string;
+}
+
+interface PrincipalCast {
+  credits?: PrincipalCastNode[];
+  typename?: string;
+}
+
+interface ProductionBudget {
+  budget?: Total;
+  typename?: string;
+}
+
+interface Quotes {
+  edges?: QuotesEdge[];
+  typename?: string;
+}
+
+interface QuotesEdge {
+  node?: MischievousNode;
+  typename?: string;
+}
+
+interface MischievousNode {
+  lines?: Line[];
+  typename?: string;
+}
+
+interface Line {
+  characters?: LineCharacter[];
+  text?: string;
+  stageDirection?: null;
+  typename?: string;
+}
+
+interface LineCharacter {
+  character?: string;
+  name?: PrimaryImageElement;
+  typename?: string;
+}
+
+interface MainColumnDataRatingsSummary {
+  topRanking?: TopRanking;
+  typename?: RatingsSummaryTypename;
+}
+
+interface TopRanking {
+  id?: string;
+  text?: NameClass;
+  rank?: number;
+  typename?: string;
+}
+
+interface Soundtrack {
+  edges?: SoundtrackEdge[];
+  typename?: string;
+}
+
+interface SoundtrackEdge {
+  node?: BraggadociousNode;
+  typename?: string;
+}
+
+interface BraggadociousNode {
+  text?: string;
+  comments?: TextElement[];
+  typename?: string;
+}
+
+interface SpokenLanguages {
+  spokenLanguages?: CurrentProductionStage[];
+  typename?: string;
+}
+
+interface StorylineKeywords {
+  edges?: StorylineKeywordsEdge[];
+  total?: number;
+  typename?: string;
+}
+
+interface StorylineKeywordsEdge {
+  node?: Node1;
+  typename?: string;
+}
+
+interface Node1 {
+  legacyID?: string;
+  text?: string;
+  typename?: string;
+}
+
+interface Summaries {
+  edges?: SummariesEdge[];
+  typename?: string;
+}
+
+interface SummariesEdge {
+  node?: Node2;
+  typename?: string;
+}
+
+interface Node2 {
+  plotText?: TextElement;
+  author?: string;
+  typename?: string;
+}
+
+interface TechnicalSpecifications {
+  soundMixes?: SoundMixes;
+  aspectRatios?: AspectRatios;
+  colorations?: Colorations;
+  typename?: string;
+}
+
+interface AspectRatios {
+  items?: AspectRatiosItem[];
+  typename?: string;
+}
+
+interface AspectRatiosItem {
+  aspectRatio?: string;
+  attributes?: any[];
+  typename?: string;
+}
+
+interface Colorations {
+  items?: ColorationsItem[];
+  typename?: string;
+}
+
+interface ColorationsItem {
+  conceptID?: string;
+  text?: string;
+  attributes?: any[];
+  typename?: string;
+}
+
+interface SoundMixes {
+  items?: CurrentProductionStage[];
+  typename?: string;
+}
+
+interface TitleMainImages {
+  total?: number;
+  edges?: TitleMainImagesEdge[];
+  typename?: string;
+}
+
+interface TitleMainImagesEdge {
+  node?: NodeClass;
+  typename?: AmbitiousTypename;
+}
+
+enum AmbitiousTypename {
+  ImageEdge = "ImageEdge",
+}
+
+interface Trivia {
+  edges?: TriviaEdge[];
+  typename?: string;
+}
+
+interface TriviaEdge {
+  node?: Node3;
+  typename?: string;
+}
+
+interface Node3 {
+  text?: TextElement;
   trademark?: null;
   relatedNames?: null;
-  __typename: string;
+  typename?: string;
 }
-export interface TextOrCommentsEntityOrOriginalText {
-  plaidHtml: string;
-  __typename: string;
+
+interface VideoStrip {
+  edges?: VideoStripEdge[];
+  typename?: string;
 }
-export interface Goofs {
-  edges?: null[] | null;
-  __typename: string;
+
+interface VideoStripEdge {
+  node?: Node4;
+  typename?: TentacledTypename;
 }
-export interface Quotes {
-  edges?: EdgesEntity10[] | null;
-  __typename: string;
+
+interface Node4 {
+  id?: string;
+  contentType?: FluffyContentType;
+  name?: NameClass;
+  runtime?: PurpleRuntime;
+  thumbnail?: NodeClass;
+  typename?: StickyTypename;
 }
-export interface EdgesEntity10 {
-  node: Node6;
-  __typename: string;
+
+interface FluffyContentType {
+  displayName?: NameClass;
+  typename?: ContentTypeTypename;
 }
-export interface Node6 {
-  lines?: LinesEntity[] | null;
-  __typename: string;
+
+interface RequestContext {
+  timestamp?: Date;
+  sidecar?: Sidecar;
+  pageType?: string;
+  subPageType?: string;
+  pageConst?: string;
+  refTagPrefix?: string;
+  headers?: Headers;
+  requestID?: string;
+  isInternal?: boolean;
 }
-export interface LinesEntity {
-  characters?: CharactersEntity1[] | null;
-  text: string;
-  stageDirection?: null;
-  __typename: string;
+
+interface Headers {
+  xForwardedFor?: string;
+  xForwardedProto?: string;
+  xForwardedPort?: string;
+  host?: string;
+  xAmznTraceID?: string;
+  xForwardedHost?: string;
+  xForwardedServer?: string;
+  userAgent?: string;
+  xAmzRid?: string;
+  xAutobahnVia?: string;
+  xAutobahnHeaderOrder?: string;
+  xAmznCiHTTPVersion?: string;
+  xOriginalURI?: string;
+  xOriginalMethod?: string;
+  xOriginalScheme?: string;
+  originalXForwardedFor?: string;
+  cookie?: string;
+  acceptLanguage?: string;
+  accept?: string;
+  acceptEncoding?: string;
+  xAmznHeaderCount?: string;
+  secChUa?: string;
+  secChUaMobile?: string;
+  secChUaPlatform?: string;
+  upgradeInsecureRequests?: string;
+  secFetchSite?: string;
+  secFetchMode?: string;
+  secFetchUser?: string;
+  secFetchDest?: string;
+  xAmazonFrontier?: string;
+  xAmazonWtmTagAtcEnable?: string;
+  xAmazonUrlspace?: string;
+  xAmazonInternalIPLocation?: string;
+  xAmazonInternalIPClass?: string;
 }
-export interface CharactersEntity1 {
-  character: string;
-  name: LanguageOrCountriesEntityOrEventOrNameOrPrimaryImageOrTitleType;
-  __typename: string;
+
+interface Sidecar {
+  account?: Account;
+  isFreediveEligible?: boolean;
+  placementMap?: PlacementMap;
+  weblabs?: Weblabs;
+  ads?: Ads;
+  localizationResponse?: LocalizationResponse;
+  isReferenceViewPreferred?: boolean;
+  sessionID?: string;
 }
-export interface CrazyCredits {
-  edges?: EdgesEntity11[] | null;
-  __typename: string;
+
+interface Account {
+  userName?: string;
+  isLoggedIn?: boolean;
 }
-export interface EdgesEntity11 {
-  node: Node7;
-  __typename: string;
+
+interface Ads {
+  sisPixelMarkup?: string;
+  adSlotsInfo?: string;
 }
-export interface Node7 {
-  text: TextOrCommentsEntityOrOriginalText;
-  __typename: string;
+
+interface LocalizationResponse {
+  userCountryCode?: string;
+  userLanguage?: string;
+  languageForTranslations?: string;
+  geolocationCountryCode?: string;
+  latitude?: string;
+  longitude?: string;
+  isOriginalTitlePreferenceSet?: boolean;
+  isFullLocalizationEnabled?: boolean;
+  isLanguageSelectorEnabled?: boolean;
 }
-export interface AlternateVersions {
-  total: number;
-  edges?: null[] | null;
-  __typename: string;
+
+interface PlacementMap {
+  right3?: PlacementMapRight3;
+  right5?: PlacementMapRight5;
 }
-export interface Connections {
-  edges?: EdgesEntity12[] | null;
-  __typename: string;
+
+interface PlacementMapRight3 {
+  componentName?: string;
+  arguments?: ContextClass;
+  symphonyMetadata?: SymphonyMetadata;
 }
-export interface EdgesEntity12 {
-  node: Node8;
-  __typename: string;
+
+interface PlacementMapRight5 {
+  componentName?: string;
+  arguments?: Right5_Arguments;
+  symphonyMetadata?: SymphonyMetadata;
 }
-export interface Node8 {
-  associatedTitle: AssociatedTitle;
-  category: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  __typename: string;
+
+interface Weblabs {
+  imdbAdsLatencyExperiment419202?: IMDB418056_Class;
+  imdbNextTitleMainHeroVideoPlayback369575?: IMDB418056_Class;
+  imdbNextTitleMainInlineVideoPlaylisting382226?: IMDB418056_Class;
+  imdbAdsWebMediaInterop395798?: IMDBADSWEBMEDIAINTEROP395798_Class;
+  imdbNextWebp421674?: IMDBADSWEBMEDIAINTEROP395798_Class;
+  imdbWebBranchIntegration380339?: IMDBADSWEBMEDIAINTEROP395798_Class;
+  imdbNextClientSideNavigation323089?: IMDB418056_Class;
+  imdb418056?: IMDB418056_Class;
+  imdbPersistedQueries417749?: IMDBADSWEBMEDIAINTEROP395798_Class;
+  imdbBranchKeySelection373673?: IMDB418056_Class;
+  imdbTrustarcGdprCookieCompliance274700?: IMDB418056_Class;
+  imdbHeroSubnavOrientation418229?: IMDB418056_Class;
+  imdbZukoVpcEndpointSwap427660?: IMDBADSWEBMEDIAINTEROP395798_Class;
 }
-export interface AssociatedTitle {
-  id: string;
-  releaseYear: YearsEntityOrReleaseYear;
-  titleText: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  originalTitleText: NodeOrNameTextOrCompanyTextOrTitleTextOrOriginalTitleTextOrCategory;
-  series?: null;
-  __typename: string;
+
+interface IMDB418056_Class {
+  c?: boolean;
 }
-export interface Soundtrack {
-  edges?: EdgesEntity13[] | null;
-  __typename: string;
+
+interface IMDBADSWEBMEDIAINTEROP395798_Class {
+  t1?: boolean;
 }
-export interface EdgesEntity13 {
-  node: Node9;
-  __typename: string;
+
+interface TranslationContext {
+  i18N?: I18N;
 }
-export interface Node9 {
-  text: string;
-  comments?: TextOrCommentsEntityOrOriginalText[] | null;
-  __typename: string;
+
+interface I18N {
+  translations?: Translations;
+  locale?: string;
 }
-export interface FeaturedReviews1 {
-  edges?: EdgesEntity14[] | null;
-  __typename: string;
+
+interface Translations {
+  resources?: { [key: string]: string };
+  default?: Default;
 }
-export interface EdgesEntity14 {
-  node: Node10;
-  __typename: string;
+
+interface Default {
+  resources?: { [key: string]: string };
 }
-export interface Node10 {
-  id: string;
-  author: Author1;
-  summary: Summary;
-  text: Text1;
-  authorRating: number;
-  submissionDate: string;
-  helpfulness: Helpfulness;
-  __typename: string;
+
+interface Query {
+  tconst?: string;
 }
-export interface Author1 {
-  nickName: string;
-  userId: string;
-  __typename: string;
-}
-export interface Text1 {
-  originalText: TextOrCommentsEntityOrOriginalText;
-  __typename: string;
-}
-export interface Helpfulness {
-  upVotes: number;
-  downVotes: number;
-  __typename: string;
-}
-export interface Faqs {
-  edges?: EdgesEntity15[] | null;
-  __typename: string;
-}
-export interface EdgesEntity15 {
-  node: Node11;
-  __typename: string;
-}
-export interface Node11 {
-  id: string;
-  question: CaptionOrPlotTextOrOriginalTextOrQuestion;
-  __typename: string;
-}
-export interface ReleaseDate1 {
-  day: number;
-  month: number;
-  year: number;
-  country: StatusOrCurrentProductionStageOrGenresEntityOrCategoryOrCountryOrCountriesEntityOrSpokenLanguagesEntity;
-  __typename: string;
-}
-export interface CountriesOfOrigin1 {
-  countries?:
-    | StatusOrCurrentProductionStageOrGenresEntityOrCategoryOrCountryOrCountriesEntityOrSpokenLanguagesEntity[]
-    | null;
-  __typename: string;
-}
-export interface DetailsExternalLinks {
-  edges?: EdgesEntity16[] | null;
-  total: number;
-  __typename: string;
-}
-export interface EdgesEntity16 {
-  node: Node12;
-  __typename: string;
-}
-export interface Node12 {
-  url: string;
-  label: string;
-  externalLinkRegion?: null;
-  __typename: string;
-}
-export interface SpokenLanguages {
-  spokenLanguages?:
-    | StatusOrCurrentProductionStageOrGenresEntityOrCategoryOrCountryOrCountriesEntityOrSpokenLanguagesEntity[]
-    | null;
-  __typename: string;
-}
-export interface Akas {
-  edges?: EdgesEntity1[] | null;
-  __typename: string;
-}
-export interface TechnicalSpecifications {
-  soundMixes: SoundMixes;
-  aspectRatios: AspectRatios;
-  colorations: Colorations;
-  __typename: string;
-}
-export interface SoundMixes {
-  items?: ItemsEntity[] | null;
-  __typename: string;
-}
-export interface ItemsEntity {
-  id: string;
-  text: string;
-  attributes?: null[] | null;
-  __typename: string;
-}
-export interface AspectRatios {
-  items?: ItemsEntity1[] | null;
-  __typename: string;
-}
-export interface ItemsEntity1 {
-  aspectRatio: string;
-  attributes?: null[] | null;
-  __typename: string;
-}
-export interface Colorations {
-  items?: ItemsEntity2[] | null;
-  __typename: string;
-}
-export interface ItemsEntity2 {
-  conceptId: string;
-  text: string;
-  attributes?: null[] | null;
-  __typename: string;
-}
-export interface ContributionQuestions {
-  contributionLink: PlotContributionLinkOrContributionLinkOrImageUploadLinkOrIframeAddReviewLink;
-  edges?: null[] | null;
-  __typename: string;
+
+interface RuntimeConfig {
+  sidecarHost?: string;
+  env?: string;
+  stage?: string;
+  cachedGraphQLEndpoint?: string;
+  graphQLEndpoint?: string;
+  vpcGraphQLEndpoint?: string;
+  graphQLTimeout?: string;
+  adsPublicSiteHost?: string;
 }
