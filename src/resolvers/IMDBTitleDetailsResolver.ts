@@ -331,11 +331,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get genres(): Genre[] {
-    const cacheDataManager = this.resolverCacheManager.load("genres");
-    if (cacheDataManager.hasData) {
-      return cacheDataManager.data as Genre[];
-    }
-
     const genresInNextData =
       this.mainPageNextData.props?.pageProps?.aboveTheFoldData?.genres?.genres?.map(
         (genre) => genre.text
@@ -343,13 +338,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
 
     const genreEnumValues = Object.values(Genre);
 
-    return cacheDataManager.cacheAndReturnData(
-      genresInNextData
-        .map((genre) => camelCase(genre))
-        .filter((oGenre) =>
-          genreEnumValues.includes(oGenre as Genre)
-        ) as Genre[]
-    );
+    return genresInNextData
+      .map((genre) => camelCase(genre))
+      .filter((oGenre) => genreEnumValues.includes(oGenre as Genre)) as Genre[];
   }
 
   extractSourceDetailsFromAElement(
