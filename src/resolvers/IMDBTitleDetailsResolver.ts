@@ -1003,23 +1003,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get storyline(): string {
-    const cacheDataManager = this.resolverCacheManager.load("storyline");
-    if (cacheDataManager.hasData) {
-      return cacheDataManager.data as string;
-    }
-    const $ = this.mainPageCheerio;
-    return cacheDataManager.cacheAndReturnData(
-      formatHTMLText(
-        $("[data-testid='storyline-plot-summary']")
-          .find(".ipc-html-content")
-          .find("div")
-          .first()
-          .contents()
-          .filter(function () {
-            return this.nodeType == 3;
-          })
-          .text()
-      )
+    return (
+      this.mainPageNextData.props?.pageProps?.mainColumnData?.summaries
+        ?.edges?.[0].node?.plotText?.plaidHTML || ""
     );
   }
 
