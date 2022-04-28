@@ -33,6 +33,7 @@ import { formatHTMLText } from "../utils/formatHTMLText";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import dayjs from "dayjs";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
+import { IMDBNextData } from "../externalInterfaces/IMDBNextDataInterface";
 
 export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private url: string;
@@ -58,6 +59,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private stillFrameImagesFirstPageCheerio!: CheerioAPI;
   private awardsPageCheerio!: CheerioAPI;
 
+  private mainPageNextData!: IMDBNextData;
+
   constructor(url: string) {
     this.url = url;
   }
@@ -82,6 +85,10 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const apiResult = await axios.get(this.url);
     this.mainPageHTMLData = apiResult.data;
     this.mainPageCheerio = loadCheerio(this.mainPageHTMLData);
+    const nextDataString =
+      this.mainPageCheerio("#__NEXT_DATA__")?.html()?.trim() || "{}";
+
+    this.mainPageNextData = JSON.parse(nextDataString);
   }
 
   async getReleaseInfoPageHTMLData() {
@@ -328,16 +335,16 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as Genre[];
     }
-    const $ = this.mainPageCheerio;
-    const originalIMDBGenres: string[] = [];
-    $("[data-testid='storyline-genres'] a").each(function () {
-      originalIMDBGenres.push($(this).text());
-    });
+
+    const genresInNextData =
+      this.mainPageNextData.props?.pageProps?.aboveTheFoldData?.genres?.genres?.map(
+        (genre) => genre.text
+      ) || [];
 
     const genreEnumValues = Object.values(Genre);
 
     return cacheDataManager.cacheAndReturnData(
-      originalIMDBGenres
+      genresInNextData
         .map((genre) => camelCase(genre))
         .filter((oGenre) =>
           genreEnumValues.includes(oGenre as Genre)
