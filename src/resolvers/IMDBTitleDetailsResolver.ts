@@ -33,6 +33,7 @@ import { formatHTMLText } from "../utils/formatHTMLText";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import dayjs from "dayjs";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
+import { IMDBNextData } from "../externalInterfaces/IMDBNextDataInterface";
 
 export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private url: string;
@@ -58,6 +59,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private stillFrameImagesFirstPageCheerio!: CheerioAPI;
   private awardsPageCheerio!: CheerioAPI;
 
+  private mainPageNextData!: IMDBNextData;
+
   constructor(url: string) {
     this.url = url;
   }
@@ -82,6 +85,10 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const apiResult = await axios.get(this.url);
     this.mainPageHTMLData = apiResult.data;
     this.mainPageCheerio = loadCheerio(this.mainPageHTMLData);
+    const nextDataString =
+      this.mainPageCheerio("#__NEXT_DATA__")?.html()?.trim() || "{}";
+
+    this.mainPageNextData = JSON.parse(nextDataString);
   }
 
   async getReleaseInfoPageHTMLData() {
@@ -199,7 +206,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       allImages: this.allImages,
       boxOffice: this.boxOffice,
       productionCompanies: this.productionCompanies,
-      storyline: this.storyline,
       taglines: this.taglines,
       runtime: this.runtime,
       keywords: this.keywords,
@@ -324,25 +330,16 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get genres(): Genre[] {
-    const cacheDataManager = this.resolverCacheManager.load("genres");
-    if (cacheDataManager.hasData) {
-      return cacheDataManager.data as Genre[];
-    }
-    const $ = this.mainPageCheerio;
-    const originalIMDBGenres: string[] = [];
-    $("[data-testid='storyline-genres'] a").each(function () {
-      originalIMDBGenres.push($(this).text());
-    });
+    const genresInNextData =
+      this.mainPageNextData.props?.pageProps?.aboveTheFoldData?.genres?.genres?.map(
+        (genre) => genre.text || ""
+      ) || [];
 
     const genreEnumValues = Object.values(Genre);
 
-    return cacheDataManager.cacheAndReturnData(
-      originalIMDBGenres
-        .map((genre) => camelCase(genre))
-        .filter((oGenre) =>
-          genreEnumValues.includes(oGenre as Genre)
-        ) as Genre[]
-    );
+    return genresInNextData
+      .map((genre) => camelCase(genre))
+      .filter((oGenre) => genreEnumValues.includes(oGenre as Genre)) as Genre[];
   }
 
   extractSourceDetailsFromAElement(
@@ -1004,27 +1001,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return cacheDataManager.cacheAndReturnData(productionCompanies);
   }
 
-  get storyline(): string {
-    const cacheDataManager = this.resolverCacheManager.load("storyline");
-    if (cacheDataManager.hasData) {
-      return cacheDataManager.data as string;
-    }
-    const $ = this.mainPageCheerio;
-    return cacheDataManager.cacheAndReturnData(
-      formatHTMLText(
-        $("[data-testid='storyline-plot-summary']")
-          .find(".ipc-html-content")
-          .find("div")
-          .first()
-          .contents()
-          .filter(function () {
-            return this.nodeType == 3;
-          })
-          .text()
-      )
-    );
-  }
-
   get taglines(): string[] {
     const cacheDataManager = this.resolverCacheManager.load("taglines");
     if (cacheDataManager.hasData) {
@@ -1072,21 +1048,11 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get keywords(): string[] {
-    const cacheDataManager = this.resolverCacheManager.load("keywords");
-    if (cacheDataManager.hasData) {
-      return cacheDataManager.data as string[];
-    }
-    const $ = this.mainPageCheerio;
-    const keywords: string[] = [];
-    $("[data-testid='storyline-plot-keywords'] a span").each(function () {
-      const keyword = formatHTMLText($(this).text());
-      // exclude keyword if it says \d more item ( for more tags )
-      if (/more$/.test(keyword)) {
-        return;
-      }
-      keywords.push(keyword);
-    });
-    return cacheDataManager.cacheAndReturnData(keywords);
+    return (
+      this.mainPageNextData.props?.pageProps?.aboveTheFoldData?.keywords?.edges
+        ?.map((i) => i.node?.text || "")
+        .filter((i) => !!i) || []
+    );
   }
 
   get awards(): IAwardDetails[] {

@@ -33,7 +33,6 @@ export interface ITitle {
   allImages: IImageDetails[];
   boxOffice?: IBoxOfficeDetails;
   productionCompanies: IProductionCompanyDetails[];
-  storyline: string;
   taglines: string[];
   runtime: IRuntimeDetails;
   keywords: string[];

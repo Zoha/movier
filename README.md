@@ -62,6 +62,10 @@ for supporting this package just buy me a coffee :)
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/zoha)
 
+## contributing
+
+please read (this)[https://github.com/zoha/movier/CONTRIBUTING.md] for more information
+
 ## license
 
 this package is published under MIT license
