@@ -62,7 +62,6 @@ export interface ITitleTestData {
   mainCountriesSellMin: number;
   firstProductionCompanyName: string;
   productionCompaniesLength: number;
-  storylineStart: string;
   taglinesMinLength: number;
   firstTagline: string;
   runtimeTitle: string;
@@ -149,8 +148,6 @@ const titlesToTest: ITitleTestData[] = [
     mainCountriesSellMin: 760507625,
     firstProductionCompanyName: "twentieth century fox",
     productionCompaniesLength: 3,
-    storylineStart:
-      "when his brother is killed in a robbery, paraplegic marine",
     taglinesMinLength: 1,
     firstTagline: "enter the world",
     runtimeTitle: "2 hours 42 minutes",
@@ -236,8 +233,6 @@ const titlesToTest: ITitleTestData[] = [
     mainCountriesSellMin: 0,
     firstProductionCompanyName: "home box office (hbo)",
     productionCompaniesLength: 5,
-    storylineStart:
-      "in the mythical continent of westeros, several powerful families fight for control of the seven kingdoms",
     taglinesMinLength: 5,
     firstTagline: "winter is coming.",
     runtimeTitle: "57 minutes",
@@ -378,10 +373,6 @@ describe("imdb title details resolver", () => {
         );
         expect(result.productionCompanies.length).toBe(
           testData.productionCompaniesLength
-        );
-        const expectedStorylineStart = testData.storylineStart;
-        expect(result.storyline.slice(0, expectedStorylineStart.length)).toBe(
-          expectedStorylineStart
         );
 
         expect(result.taglines.length).toBeGreaterThanOrEqual(

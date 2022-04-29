@@ -206,7 +206,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       allImages: this.allImages,
       boxOffice: this.boxOffice,
       productionCompanies: this.productionCompanies,
-      storyline: this.storyline,
       taglines: this.taglines,
       runtime: this.runtime,
       keywords: this.keywords,
@@ -1000,13 +999,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
         });
       });
     return cacheDataManager.cacheAndReturnData(productionCompanies);
-  }
-
-  get storyline(): string {
-    return (
-      this.mainPageNextData.props?.pageProps?.mainColumnData?.summaries
-        ?.edges?.[0].node?.plotText?.plaidHTML || ""
-    );
   }
 
   get taglines(): string[] {
