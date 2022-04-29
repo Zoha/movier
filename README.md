@@ -64,7 +64,7 @@ for supporting this package just buy me a coffee :)
 
 ## contributing
 
-please read (this)[https://github.com/zoha/movier/CONTRIBUTING.md] for more information
+please read [this](https://github.com/Zoha/movier/blob/main/CONTRIBUTING.md) for more information
 
 ## license
 
