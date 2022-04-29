@@ -80,7 +80,7 @@ export class IMDBTitleSearchResolver implements ITitleSearchResolver {
       };
     }
     const queryName = this.queryName;
-    const nameExecDetails = /(.+)\s(\d{4})\s*$/.exec(queryName);
+    const nameExecDetails = /^(.{1,150})\s(\d{4})\s*$/.exec(queryName);
     let nameWithoutYear: string,
       requestedYear: number | null = null;
     nameWithoutYear = queryName;
