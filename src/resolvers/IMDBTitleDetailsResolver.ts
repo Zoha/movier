@@ -1048,21 +1048,11 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get keywords(): string[] {
-    const cacheDataManager = this.resolverCacheManager.load("keywords");
-    if (cacheDataManager.hasData) {
-      return cacheDataManager.data as string[];
-    }
-    const $ = this.mainPageCheerio;
-    const keywords: string[] = [];
-    $("[data-testid='storyline-plot-keywords'] a span").each(function () {
-      const keyword = formatHTMLText($(this).text());
-      // exclude keyword if it says \d more item ( for more tags )
-      if (/more$/.test(keyword)) {
-        return;
-      }
-      keywords.push(keyword);
-    });
-    return cacheDataManager.cacheAndReturnData(keywords);
+    return (
+      this.mainPageNextData.props?.pageProps?.aboveTheFoldData?.keywords?.edges
+        ?.map((i) => i.node?.text || "")
+        .filter((i) => !!i) || []
+    );
   }
 
   get awards(): IAwardDetails[] {
