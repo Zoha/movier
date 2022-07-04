@@ -32,7 +32,7 @@ all movie details methods finally return a [title result](https://raw.githubuser
 that you can see as an example on this file [here](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
 
 useful methods that are exported from the package, note that all these methods will return a [title details result object](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
-
+```JAVASCRIPT
     // find a title and returns the first matched title data
     movier.getTitleDetailsByName("interstellar 2014")
     // get title info by its url
@@ -41,16 +41,71 @@ useful methods that are exported from the package, note that all these methods w
     movier.getTitleDetailsByIMDBId("tt0816692")
     // find title by returned object from searchTitleByName function
     movier.getTitleDetailsByFoundedTitleDetails(foundedDetails)
+```
+
+the result would be like this, you can see a full json example [here](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
+
+```JAVASCRIPT
+{
+    detailsLang : "...", 
+    mainSource : {...}, 
+    allSources : [...], 
+    name : "...", 
+    worldWideName : "...",
+    otherNames : [...],
+    titleYear : ...,
+    genres : [...],
+    directors : [...],
+    writers : [...], 
+    mainType : "...",
+    plot : "...",
+    casts : [...],
+    producers : [...],
+    mainRate : {...},
+    allRates : [...],
+    allReleaseDates : [...],
+    dates : {...},
+    ageCategoryTitle : "...",
+    languages : [...],
+    countriesOfOrigin : [...],
+    posterImage : {...},
+    allImages : [...],
+    boxOffice : {...},
+    productionCompanies : [...],
+    taglines : [...],
+    runtime : {...},
+    keywords : [...],
+    awards : [...],
+    awardsSummary : {...},
+    otherLangs : [...]
+}
+```
 
 ### Search for titles
 
 you can search for a title by its name using this method
-
+```JAVASCRIPT
     // search for title
     movier.searchTitleByName("interstellar 2014")
-    return [{name, titleYear, aka, url, titleType, ....}]
+```
 
-this method returns an [array of found items details](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTItleSearchResult.json)
+this method returns an [array of found items details](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTItleSearchResult.json), that its structure would be like this 
+
+```JAVASCRIPT
+[ 
+    {
+        source: {...},
+        name: "...",
+        aka: "...",
+        titleYear: ...,
+        url: "...",
+        titleType: "...",
+        matchScore: ...,
+        thumbnailImageUrl: "..."
+   },
+   ...
+]
+```
 
 ## Test
 
