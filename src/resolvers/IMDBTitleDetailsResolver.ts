@@ -34,6 +34,7 @@ import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import dayjs from "dayjs";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
 import { IMDBNextData } from "../externalInterfaces/IMDBNextDataInterface";
+import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
 
 export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private url: string;
@@ -704,7 +705,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as IDatesDetails;
     }
-    // pick first one that dont have a festival in its info
+    // pick first one that don't have a festival in its info
     const startDateDetails =
       this.allReleaseDates.find(
         (releaseDate) => !releaseDate.extraInfo?.includes?.("festival")
@@ -807,18 +808,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return thumbnails.filter((i) => !!i);
   }
 
-  getFullSizeImageFromThumbnailUrl(thumbnailUrl?: string): string {
-    if (!thumbnailUrl || typeof thumbnailUrl !== "string") {
-      return "";
-    }
-    if (/@.+/i.test(thumbnailUrl)) {
-      return thumbnailUrl.split("@").slice(0, -1).join("@") + "@.jpg";
-    } else if (/\._V1.+/i.test(thumbnailUrl)) {
-      return thumbnailUrl.split("._V1").slice(0, -1).join("") + ".jpg";
-    }
-    return "";
-  }
-
   get posterImage(): IImageDetails {
     const cacheDataManager = this.resolverCacheManager.load("posterImage");
     if (cacheDataManager.hasData) {
@@ -828,7 +817,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const imgEl = $("[data-testid='hero-media__poster'] img").first();
     const srcset = imgEl.attr("srcset");
     const urlSrc = imgEl.attr("src");
-    const url = this.getFullSizeImageFromThumbnailUrl(urlSrc);
+    const url = getIMDBFullSizeImageFromThumbnailUrl(urlSrc);
     const type = ImageType.Poster;
     const original: IImageDetails = {
       title: `${this.name} ${this.titleYear}`,
@@ -854,7 +843,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const images: IImageDetails[] = [];
     const $p = this.posterImagesFirstPageCheerio;
     const $s = this.stillFrameImagesFirstPageCheerio;
-    const resolverInstance = this;
     [
       {
         type: ImageType.Poster,
@@ -873,9 +861,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
           sourceType: Source.IMDB,
           title,
           type,
-          url: resolverInstance.getFullSizeImageFromThumbnailUrl(
-            thumb100ImageUrl
-          ),
+          url: getIMDBFullSizeImageFromThumbnailUrl(thumb100ImageUrl),
           thumbnails: [
             ...(thumb100ImageUrl
               ? [

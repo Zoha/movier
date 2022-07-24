@@ -51,5 +51,6 @@ export enum ImageType {
   StillFrame = "stillFrame",
   Event = "event",
   VideoImage = "videoImage",
+  ProfileImage = "profileImage",
   Other = "other",
 }

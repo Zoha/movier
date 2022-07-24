@@ -194,3 +194,47 @@ export interface ITitleDetailsResolver {
 export interface ITitleSearchResolver {
   getResult(): Promise<IFoundedTitleDetails[]>;
 }
+
+export interface INameDetailsResolver {
+  getDetails(): Promise<IName | undefined>;
+}
+
+export interface IName {
+  detailsLang: Language;
+  mainSource: ISourceDetails;
+  name: string;
+  birthDate?: Date;
+  birthPlace?: string;
+  miniBio: string[];
+  knownFor: IKnownForItem[];
+  filmography: IFilmographyItem[];
+  personalDetails: IPersonalDetailItem[];
+  profileImage?: IImageDetails;
+  allImages: IImageDetails[];
+}
+
+export interface IKnownForItem {
+  source: ISourceDetails;
+  posterImage: IImageDetails;
+  name: string;
+  role: string;
+  startYear: number;
+  endYear: number;
+}
+
+export interface IFilmographyItem {
+  source: ISourceDetails;
+  name: string;
+  type: TitleMainType;
+  startYear: number;
+  endYear: number;
+  productionStatus: string;
+  role: string;
+  category: string; // TODO: make an enum for this
+}
+
+export interface IPersonalDetailItem {
+  title: string;
+  details: string;
+  relatedSources: ISourceDetails[];
+}
