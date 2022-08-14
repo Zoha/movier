@@ -211,6 +211,8 @@ export interface IName {
   personalDetails: IPersonalDetailItem[];
   profileImage?: IImageDetails;
   allImages: IImageDetails[];
+  deathDate?: Date;
+  deathPlace?: string;
 }
 
 export interface IKnownForItem {
