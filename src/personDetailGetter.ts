@@ -1,6 +1,7 @@
 import { Source } from "./enums";
 import {
   IFoundedPersonDetails,
+  IMDBPathType,
   IPerson,
   IPersonDetailsResolver,
 } from "./interfaces";
@@ -25,7 +26,14 @@ export async function getPersonDetailsByUrl(
   }
 
   // get details from resolver
-  const result = await resolver.getDetails();
+  let result;
+  try {
+    result = await resolver.getDetails();
+  } catch (e) {
+    throw new Error(
+      "failed to get the result from IMDB : " + (e as Error).message
+    );
+  }
   if (!result) {
     throw new Error(
       "there was a problem in getting title details, title resolver returned empty data"
@@ -58,5 +66,7 @@ export async function getPersonDetailsByName(
 export async function getPersonDetailsByIMDBId(
   personId: string
 ): Promise<IPerson> {
-  return getPersonDetailsByUrl(convertIMDBTitleIdToUrl(personId));
+  return getPersonDetailsByUrl(
+    convertIMDBTitleIdToUrl(personId, IMDBPathType.Name)
+  );
 }

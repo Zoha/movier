@@ -251,3 +251,8 @@ export interface IPersonalDetailItem {
   details: string;
   relatedSources: ISourceDetails[];
 }
+
+export enum IMDBPathType {
+  Title = "title",
+  Name = "name",
+}

@@ -20,7 +20,14 @@ export async function getTitleDetailsByUrl(titleUrl: string): Promise<ITitle> {
   }
 
   // get details from resolver
-  const result = await resolver.getDetails();
+  let result;
+  try {
+    result = await resolver.getDetails();
+  } catch (e) {
+    throw new Error(
+      "failed to get the result from IMDB : " + (e as Error).message
+    );
+  }
   if (!result) {
     throw new Error(
       "there was a problem in getting title details, title resolver returned empty data"

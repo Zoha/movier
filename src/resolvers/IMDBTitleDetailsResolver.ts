@@ -713,13 +713,13 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const startDateDetails =
       this.allReleaseDates.find(
         (releaseDate) => !releaseDate.extraInfo?.includes?.("festival")
-      ) || this.allReleaseDates[0];
+      ) ?? this.allReleaseDates[0];
 
     return cacheDataManager.cacheAndReturnData({
-      startCountry: startDateDetails.country,
-      startDate: startDateDetails.date,
-      startExtraInfo: startDateDetails.extraInfo,
-      startYear: startDateDetails.date?.getUTCFullYear() ?? 2020,
+      startCountry: startDateDetails?.country ?? "",
+      startDate: startDateDetails?.date ?? "",
+      startExtraInfo: startDateDetails?.extraInfo ?? "",
+      startYear: startDateDetails?.date?.getUTCFullYear() ?? this.titleYear,
       titleYear: this.titleYear,
       isEnded: this.isEnded,
       ...(this.isEnded
