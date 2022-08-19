@@ -4,5 +4,13 @@ export function convertIMDBPathToIMDBUrl(path?: string): string {
   if (!path) {
     return "";
   }
-  return IMDB_BASE_URL + path;
+  try {
+    const url = new URL(IMDB_BASE_URL + path);
+    url.searchParams.delete("ref_");
+    url.searchParams.delete("ref");
+    return url.href;
+  } catch (e) {
+    // handling invalid urls
+    return "";
+  }
 }

@@ -157,6 +157,14 @@ export interface IFoundedTitleDetails {
   thumbnailImageUrl: string;
 }
 
+export interface IFoundedPersonDetails {
+  source: ISourceDetails;
+  name: string;
+  url: string;
+  matchScore: number;
+  thumbnailImageUrl: string;
+}
+
 export interface IRuntimeDetails {
   title: string;
   hours: number;
@@ -193,6 +201,9 @@ export interface ITitleDetailsResolver {
 
 export interface ITitleSearchResolver {
   getResult(): Promise<IFoundedTitleDetails[]>;
+}
+export interface INameSearchResolver {
+  getResult(): Promise<IFoundedPersonDetails[]>;
 }
 
 export interface INameDetailsResolver {
