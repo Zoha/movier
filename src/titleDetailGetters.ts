@@ -6,7 +6,7 @@ import {
 import { Source } from "./enums";
 import { IMDBTitleDetailsResolver } from "./resolvers/IMDBTitleDetailsResolver";
 import { guessSourceTypeByUrl } from "./utils/guessSourceTypeByUrl";
-import { searchTitleByName, SearchTitleByNameOptions } from "./titleSearchers";
+import { searchTitleByName, SearchTitleByNameOptions } from "./titleSearcher";
 import { convertIMDBTitleIdToUrl } from "./utils/convertIMDBTitleIdToUrl";
 
 export async function getTitleDetailsByUrl(titleUrl: string): Promise<ITitle> {

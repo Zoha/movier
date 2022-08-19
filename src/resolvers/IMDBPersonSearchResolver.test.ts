@@ -1,8 +1,8 @@
-import { IMDBNameSearchResolver } from "./IMDBNameSearchResolver";
+import { IMDBPersonSearchResolver } from "./IMDBPersonSearchResolver";
 
 describe("imdb title search resolver", () => {
   it("return correct list for searching titles", async () => {
-    const resolver = new IMDBNameSearchResolver("emilia clarke", {
+    const resolver = new IMDBPersonSearchResolver("emilia clarke", {
       exactMatch: false,
     });
     const result = await resolver.getResult();

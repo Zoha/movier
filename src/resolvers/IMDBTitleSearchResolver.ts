@@ -6,7 +6,7 @@ import axios from "axios";
 import { formatHTMLText } from "../utils/formatHTMLText";
 import { Source, TitleMainType } from "../enums";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
-import { SearchTitleByNameOptions } from "../titleSearchers";
+import { SearchTitleByNameOptions } from "../titleSearcher";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
 
 export class IMDBTitleSearchResolver implements ITitleSearchResolver {

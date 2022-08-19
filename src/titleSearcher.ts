@@ -30,6 +30,3 @@ export async function searchTitleByName(
   // get details from resolver
   return await resolver.getResult();
 }
-
-// TODO: search for person by name
-// TODO: search for title or person by name

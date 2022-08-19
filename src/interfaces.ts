@@ -202,15 +202,15 @@ export interface ITitleDetailsResolver {
 export interface ITitleSearchResolver {
   getResult(): Promise<IFoundedTitleDetails[]>;
 }
-export interface INameSearchResolver {
+export interface IPersonSearchResolver {
   getResult(): Promise<IFoundedPersonDetails[]>;
 }
 
-export interface INameDetailsResolver {
-  getDetails(): Promise<IName | undefined>;
+export interface IPersonDetailsResolver {
+  getDetails(): Promise<IPerson | undefined>;
 }
 
-export interface IName {
+export interface IPerson {
   detailsLang: Language;
   mainSource: ISourceDetails;
   name: string;

@@ -1,6 +1,9 @@
-import { SearchPersonByNameOptions } from "./../nameDetailsGetter";
+import { SearchPersonByNameOptions } from "../personSearcher";
 import { IMDB_TITLE_SEARCH_URL } from "../constants";
-import { IFoundedPersonDetails, INameSearchResolver } from "../interfaces";
+import {
+  IFoundedPersonDetails,
+  IPersonSearchResolver as IPersonSearchResolver,
+} from "../interfaces";
 import { ResolverCacheManager } from "../utils/ResolverCacheManager";
 import { load as loadCheerio, CheerioAPI } from "cheerio";
 import axios from "axios";
@@ -9,7 +12,7 @@ import { Source } from "../enums";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
 
-export class IMDBNameSearchResolver implements INameSearchResolver {
+export class IMDBPersonSearchResolver implements IPersonSearchResolver {
   private queryName: string;
   private exactMatch: boolean;
   private searchPageHTMLData!: string;
@@ -57,6 +60,12 @@ export class IMDBNameSearchResolver implements INameSearchResolver {
   }
 
   get originalResultList(): IFoundedPersonDetails[] {
+    const cacheDataManager =
+      this.resolverCacheManager.load("originalResultList");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IFoundedPersonDetails[];
+    }
+
     const result: IFoundedPersonDetails[] = [];
     const $ = this.searchPageCheerio;
 
@@ -78,6 +87,6 @@ export class IMDBNameSearchResolver implements INameSearchResolver {
       });
     });
 
-    return result;
+    return cacheDataManager.cacheAndReturnData(result);
   }
 }

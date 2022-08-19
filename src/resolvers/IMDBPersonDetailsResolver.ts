@@ -1,12 +1,12 @@
 import dayjs from "dayjs";
-import { IPersonalDetailItem } from "./../interfaces";
-import { ImageType, Source, TitleMainType } from "./../enums";
+import { IPersonalDetailItem } from "../interfaces";
+import { ImageType, Source, TitleMainType } from "../enums";
 import axios from "axios";
 import { load as loadCheerio, CheerioAPI, Cheerio, Element } from "cheerio";
 import { Language } from "../enums";
 import {
-  IName,
-  INameDetailsResolver,
+  IPerson,
+  IPersonDetailsResolver,
   ISourceDetails,
   IFilmographyItem,
   IImageDetails,
@@ -19,7 +19,7 @@ import { stripHTMLText } from "../utils/stripHTMLText";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
 
-export class IMDBNameDetailsResolver implements INameDetailsResolver {
+export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   private url: string;
   private resolverCacheManager = new ResolverCacheManager();
   private mainPageHTMLData!: string;
@@ -35,7 +35,7 @@ export class IMDBNameDetailsResolver implements INameDetailsResolver {
     this.url = url;
   }
 
-  async getDetails(): Promise<IName | undefined> {
+  async getDetails(): Promise<IPerson | undefined> {
     await Promise.all([
       this.getMainPageHTMLData(),
       this.getBioPageHTMLData(),
@@ -77,7 +77,7 @@ export class IMDBNameDetailsResolver implements INameDetailsResolver {
     return urlInstance.href;
   }
 
-  generateReturnDetailsData(): IName | undefined {
+  generateReturnDetailsData(): IPerson | undefined {
     const result = {
       detailsLang: Language.English,
       mainSource: this.mainSourceDetails,

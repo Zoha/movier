@@ -1,6 +1,6 @@
 import dayjs from "dayjs";
-import { IName } from "./../interfaces";
-import { IMDBNameDetailsResolver } from "./IMDBNameDetailsResolver";
+import { IPerson } from "../interfaces";
+import { IMDBPersonDetailsResolver } from "./IMDBPersonDetailsResolver";
 
 export type TestDataType = {
   name: string;
@@ -109,8 +109,8 @@ describe("test imdb name details resolver", () => {
     it(
       `check ${testData.name} details`,
       async () => {
-        const resolver = new IMDBNameDetailsResolver(testData.url);
-        const nameDetails = (await resolver.getDetails()) as IName;
+        const resolver = new IMDBPersonDetailsResolver(testData.url);
+        const nameDetails = (await resolver.getDetails()) as IPerson;
         expect(typeof nameDetails === "object").toBe(true);
         expect(nameDetails.name).toBe(testData.name);
         if (testData.birthDate) {
