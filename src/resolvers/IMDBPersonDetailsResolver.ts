@@ -204,8 +204,8 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
           type: type,
           url: thumbnailUrl ?? "",
           size: {
-            width: Number(thumbnailImgEl.attr("width")) ?? 0,
-            height: Number(thumbnailImgEl.attr("height")) ?? 0,
+            width: Number(thumbnailImgEl.attr("width")) || 0,
+            height: Number(thumbnailImgEl.attr("height")) || 0,
           },
         },
       ],
@@ -388,7 +388,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     }
 
     return cacheDataManager.cacheAndReturnData(
-      formatHTMLText(birthPlaceEl.text()) ?? ""
+      formatHTMLText(birthPlaceEl.text())
     );
   }
 
@@ -427,7 +427,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     }
 
     return cacheDataManager.cacheAndReturnData(
-      formatHTMLText(deathPlaceEl.text()) ?? ""
+      formatHTMLText(deathPlaceEl.text())
     );
   }
 }
