@@ -78,7 +78,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   }
 
   generateReturnDetailsData(): IPerson | undefined {
-    const result = {
+    const result: IPerson = {
       detailsLang: Language.English,
       mainSource: this.mainSourceDetails,
       name: this.name,
@@ -90,6 +90,8 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
       personalDetails: this.personalDetails,
       birthDate: this.birthDate,
       birthPlace: this.birthPlace,
+      deathDate: this.deathDate,
+      deathPlace: this.deathPlace,
     };
     return result;
   }
@@ -241,7 +243,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
         .each((i, subEl) => {
           const years = formatHTMLText($(subEl).find(".year_column").text())
             .split("-")
-            .map(Number);
+            .map((s) => parseInt(s, 10));
           const name = formatHTMLText($(subEl).find("b a").first().text());
           if (!name) {
             return;
@@ -387,6 +389,45 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
 
     return cacheDataManager.cacheAndReturnData(
       formatHTMLText(birthPlaceEl.text()) ?? ""
+    );
+  }
+
+  get deathDate(): Date | undefined {
+    const cacheDataManager = this.resolverCacheManager.load("deathDate");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as Date;
+    }
+    const $ = this.mainPageCheerio;
+    const deathDateString = $("#name-death-info")
+      .find("time")
+      .first()
+      .attr("datetime");
+    if (!deathDateString) {
+      return;
+    }
+    const deathDate = dayjs(deathDateString, "YYYY-M-D").toDate();
+    return cacheDataManager.cacheAndReturnData(deathDate);
+  }
+
+  get deathPlace(): string | undefined {
+    const cacheDataManager = this.resolverCacheManager.load("deathPlace");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as string;
+    }
+    const $ = this.mainPageCheerio;
+    const deathPlaceEl = $("#name-death-info")
+      .clone()
+      .find("time")
+      .remove()
+      .end()
+      .find("a")
+      .first();
+    if (!deathPlaceEl.length) {
+      return;
+    }
+
+    return cacheDataManager.cacheAndReturnData(
+      formatHTMLText(deathPlaceEl.text()) ?? ""
     );
   }
 }

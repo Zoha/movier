@@ -16,6 +16,8 @@ export type TestDataType = {
   };
   personalDetails: object;
   allImagesCount?: number;
+  deathDate?: string;
+  deathPlace?: string;
 };
 
 const dataToTest: TestDataType[] = [
@@ -24,6 +26,8 @@ const dataToTest: TestDataType[] = [
     url: "https://www.imdb.com/name/nm0000008",
     birthDate: "1924-04-03",
     birthPlace: "Omaha, Nebraska, USA",
+    deathDate: "2004-07-01",
+    deathPlace: "Westwood, Los Angeles, California, USA",
     filmographyData: {
       actor: 48,
       director: 1,
@@ -119,8 +123,17 @@ describe("test imdb name details resolver", () => {
             testData.birthDate
           );
         }
+        if (testData.deathDate) {
+          expect(nameDetails.deathDate).toBeInstanceOf(Date);
+          expect(dayjs(nameDetails.deathDate).format("YYYY-MM-DD")).toBe(
+            testData.deathDate
+          );
+        }
         if (nameDetails.birthPlace) {
           expect(nameDetails.birthPlace).toContain(testData.birthPlace);
+        }
+        if (nameDetails.deathPlace) {
+          expect(nameDetails.deathPlace).toContain(testData.deathPlace);
         }
 
         const filmoGraphyData = testData.filmographyData;
