@@ -232,7 +232,9 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     const $ = this.mainPageCheerio;
 
     $("#filmography .head").each((i, el) => {
-      const category = formatHTMLText($(el).find("a").text());
+      const category = formatHTMLText($(el).find("a").text(), {
+        toLowerCase: true,
+      });
       $(el)
         .next(".filmo-category-section")
         .find(".filmo-row")
@@ -321,7 +323,9 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
       const a = $(trEl).find("td:eq(1)").find("a").first();
       const aUrl = a.attr("href");
       personalDetails.push({
-        title: formatHTMLText($(trEl).find("td:eq(0)").text()),
+        title: formatHTMLText($(trEl).find("td:eq(0)").text(), {
+          toLowerCase: true,
+        }),
         details: formatHTMLText(
           $(trEl)
             .find("td:eq(1)")

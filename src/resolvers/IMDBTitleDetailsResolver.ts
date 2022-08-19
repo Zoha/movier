@@ -286,9 +286,13 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as string[];
     }
-    return cacheDataManager.cacheAndReturnData([
-      ...new Set(this.allNames.map((i) => i.name)),
-    ]);
+    return cacheDataManager.cacheAndReturnData(
+      this.allNames
+        .map((i) => i.name)
+        // unique items
+        // TODO: test that this is working
+        .filter((v, i, arr) => arr.findIndex((fv) => fv === v) === i)
+    );
   }
 
   get nameInMainPage(): string {
@@ -902,7 +906,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       .first()
       .text();
     const [, budgetWithCommas] =
-      /\$([\d,]+)\s\(estimated\)/.exec(formatHTMLText(budgetRawText)) || [];
+      /\$([\d,]+)\s\(estimated\)/.exec(
+        formatHTMLText(budgetRawText, { toLowerCase: true })
+      ) || [];
     const budget = this.convertDividedHTMLTextToNumber(budgetWithCommas);
     const sellInMainCountriesElText = $(
       "[data-testid='title-boxoffice-grossdomestic']"
@@ -1002,7 +1008,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       });
     if (
       taglines.length === 1 &&
-      taglines[0]?.includes("we don't have any taglines")
+      taglines[0]?.toLowerCase().includes("we don't have any taglines")
     ) {
       taglines = [];
     }
@@ -1073,7 +1079,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
             const trsLength = Number(td.attr("rowspan"));
 
             const outcome =
-              formatHTMLText(td.find("b").first().text()) === "winner"
+              formatHTMLText(td.find("b").first().text(), {
+                toLowerCase: true,
+              }) === "winner"
                 ? AwardOutcome.Winner
                 : AwardOutcome.Nominee;
 
@@ -1152,7 +1160,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     let wins = 0;
     $("td.title_award_outcome").each(function () {
       const td = $(this);
-      const text = formatHTMLText(td.text());
+      const text = formatHTMLText(td.text(), { toLowerCase: true });
       const length = Number(td.attr("rowspan"));
       totalNominations += length;
       if (text.includes("winner")) {

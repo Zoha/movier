@@ -112,7 +112,8 @@ const titlesToTest: ITitleTestData[] = [
         },
         {
           index: null,
-          finderF: (item: IPersonDetails) => item.name === "kevin dorman",
+          finderF: (item: IPersonDetails) =>
+            item.name.toLowerCase() === "kevin dorman",
           name: "kevin dorman",
           sourceId: null,
           rolesLength: 2,
@@ -267,8 +268,8 @@ describe("imdb title details resolver", () => {
         expect(result.allSources.length).toBeGreaterThanOrEqual(
           testData.sourcesMinLength
         );
-        expect(result.name).toBe(testData.name);
-        expect(result.worldWideName).toBe(testData.worldWideName);
+        expect(result.name.toLowerCase()).toBe(testData.name);
+        expect(result.worldWideName.toLowerCase()).toBe(testData.worldWideName);
         expect(result.otherNames.length).toBeGreaterThan(
           testData.otherNamesMinLength
         );
@@ -279,18 +280,20 @@ describe("imdb title details resolver", () => {
         );
         expect(result.directors).toHaveLength(testData.directors.length);
         const director = result.directors[0];
-        expect(director.name).toBe(testData.directors.firstOneName);
+        expect(director.name.toLowerCase()).toBe(
+          testData.directors.firstOneName
+        );
         expect(director.source?.sourceId).toBe(testData.directors.firstOneId);
 
         expect(result.writers).toHaveLength(testData.writers.length);
         const writer = result.writers[0];
-        expect(writer.name).toBe(testData.writers.firstOneName);
+        expect(writer.name.toLowerCase()).toBe(testData.writers.firstOneName);
         if (testData.writers.firstOneExtraInfo) {
           expect(writer.extraInfo).toBe(testData.writers.firstOneExtraInfo);
         }
         expect(writer.source?.sourceId).toBe(testData.writers.firstONeSourceId);
         expect(result.mainType).toBe(testData.mainType);
-        expect(result.plot).toContain(testData.plotContains);
+        expect(result.plot.toLowerCase()).toContain(testData.plotContains);
         expect(result.casts.length).toBeGreaterThan(testData.casts.minLength);
         for (const castData of testData.casts.tests) {
           const cast = castData.finderF
@@ -300,12 +303,12 @@ describe("imdb title details resolver", () => {
           if (!cast) {
             return;
           }
-          expect(cast.name).toBe(castData.name);
+          expect(cast.name.toLowerCase()).toBe(castData.name);
           if (castData.sourceId) {
             expect(cast.source?.sourceId).toBe(castData.sourceId);
           }
           expect(cast.roles.length).toBe(castData.rolesLength);
-          expect(cast.roles[0].name).toBe(castData.firstRoleName);
+          expect(cast.roles[0].name.toLowerCase()).toBe(castData.firstRoleName);
         }
 
         const mainRate = result.mainRate;
@@ -334,16 +337,22 @@ describe("imdb title details resolver", () => {
         if (testData.dates.endYear) {
           expect(result.dates.endYear).toBe(testData.dates.endYear);
         }
-        expect(result.dates.startCountry).toBe(testData.dates.startCountry);
+        expect(result.dates.startCountry.toLocaleLowerCase()).toBe(
+          testData.dates.startCountry
+        );
         expect(result.allReleaseDates.length).toBeGreaterThanOrEqual(
           testData.allReleaseDatesMinLength
         );
 
-        expect(result.ageCategoryTitle).toBe(testData.ageCategory);
+        expect(result.ageCategoryTitle.toLowerCase()).toBe(
+          testData.ageCategory
+        );
         Array.from(Array(testData.languages?.length)).forEach((v, i) => {
-          expect(result.languages[i]).toBe(testData.languages[i]);
+          expect(result.languages[i].toLocaleLowerCase()).toBe(
+            testData.languages[i]
+          );
         });
-        expect(result.countriesOfOrigin[0]).toBe(
+        expect(result.countriesOfOrigin[0].toLocaleLowerCase()).toBe(
           testData.firstCountriesOfOrigin
         );
         expect(result.posterImage.url).toBe(testData.posterImageUrl);
@@ -368,7 +377,7 @@ describe("imdb title details resolver", () => {
           );
         }
 
-        expect(result.productionCompanies[0].name).toBe(
+        expect(result.productionCompanies[0].name.toLowerCase()).toBe(
           testData.firstProductionCompanyName
         );
         expect(result.productionCompanies.length).toBe(
@@ -378,14 +387,20 @@ describe("imdb title details resolver", () => {
         expect(result.taglines.length).toBeGreaterThanOrEqual(
           testData.taglinesMinLength
         );
-        expect(result.taglines[0]).toBe(testData.firstTagline);
-        expect(result.runtime.title).toBe(testData.runtimeTitle);
+        expect(result.taglines[0].toLocaleLowerCase()).toBe(
+          testData.firstTagline
+        );
+        expect(result.runtime.title.toLowerCase()).toBe(testData.runtimeTitle);
         expect(result.runtime.hours).toBe(testData.runtimeHours);
         expect(result.runtime.minutes).toBe(testData.runtimeMinutes);
         expect(result.keywords.length).toBeGreaterThanOrEqual(
           testData.keywordsMinLength
         );
-        expect(result.keywords.includes(testData.onOfKeywords)).toBe(true);
+        expect(
+          result.keywords
+            .map((i) => i.toLowerCase())
+            .includes(testData.onOfKeywords)
+        ).toBe(true);
 
         // posters & still frame images length
         expect(

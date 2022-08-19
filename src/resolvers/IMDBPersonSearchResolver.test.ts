@@ -10,6 +10,6 @@ describe("imdb title search resolver", () => {
     expect(first.source.sourceId).toBe("nm3592338");
     expect(first.url).toBe("https://www.imdb.com/name/nm3592338/");
     expect(!!first.thumbnailImageUrl).toBe(true);
-    expect(first.name.toLocaleLowerCase()).toBe("emilia clarke");
+    expect(first.name).toBe("Emilia Clarke");
   }, 200000);
 });

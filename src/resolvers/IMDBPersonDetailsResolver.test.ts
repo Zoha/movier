@@ -20,10 +20,10 @@ export type TestDataType = {
 
 const dataToTest: TestDataType[] = [
   {
-    name: "marlon brando",
+    name: "Marlon Brando",
     url: "https://www.imdb.com/name/nm0000008",
     birthDate: "1924-04-03",
-    birthPlace: "Omaha, Nebraska, USA".toLowerCase(),
+    birthPlace: "Omaha, Nebraska, USA",
     filmographyData: {
       actor: 48,
       director: 1,
@@ -34,22 +34,22 @@ const dataToTest: TestDataType[] = [
       thanks: 9,
     },
     knownFormFirstItemDetails: {
-      name: "apocalypse now",
+      name: "Apocalypse Now",
       role: "Colonel Walter E. Kurtz",
       startYear: 1979,
     },
     personalDetails: {
-      spouse: ["tarita", "nm0850454"],
-      children: ["christian brando", "nm0113598"],
-      parents: ["brando sr., marlon"],
-      relatives: ["brando"],
+      spouse: ["Tarita", "nm0850454"],
+      children: ["Christian Brando", "nm0113598"],
+      parents: ["Brando Sr., Marlon"],
+      relatives: ["Brando"],
     },
   },
   {
-    name: "Jake Gyllenhaal".toLowerCase(),
+    name: "Jake Gyllenhaal",
     url: "https://www.imdb.com/name/nm0350453/",
     birthDate: "1980-12-19",
-    birthPlace: "Los Angeles, California, USA".toLowerCase(),
+    birthPlace: "Los Angeles, California, USA",
     filmographyData: {
       actor: 62,
       soundtrack: 4,
@@ -58,20 +58,20 @@ const dataToTest: TestDataType[] = [
       thanks: 7,
     },
     knownFormFirstItemDetails: {
-      name: "Nightcrawler".toLowerCase(),
+      name: "Nightcrawler",
       role: "Louis Bloom",
       startYear: 2014,
     },
     personalDetails: {
-      parents: ["Naomi Foner".toLowerCase(), "nm0284524"],
-      relatives: ["Maggie Gyllenhaal".toLowerCase()],
+      parents: ["Naomi Foner", "nm0284524"],
+      relatives: ["Maggie Gyllenhaal"],
     },
   },
   {
-    name: "Emilia Clarke".toLowerCase(),
+    name: "Emilia Clarke",
     url: "https://www.imdb.com/name/nm3592338",
     birthDate: "1986-10-23",
-    birthPlace: "London, England, UK".toLowerCase(),
+    birthPlace: "London, England, UK",
     filmographyData: {
       actress: 24,
       soundtrack: 3,
@@ -79,24 +79,24 @@ const dataToTest: TestDataType[] = [
       self: 81,
     },
     knownFormFirstItemDetails: {
-      name: "game of thrones".toLowerCase(),
+      name: "Game of Thrones",
       role: "Daenerys Targaryen",
       startYear: 2011,
       endYear: 2019,
     },
     personalDetails: {
-      parents: ["Clarke, Jenny".toLowerCase()],
+      parents: ["Clarke, Jenny"],
     },
   },
   {
-    name: "Shahrokh Estakhri".toLowerCase(),
+    name: "Shahrokh Estakhri",
     url: "https://www.imdb.com/name/nm5427511",
     filmographyData: {
       actor: 10,
     },
     knownFormFirstItemDetails: {
-      name: "check".toLowerCase(),
-      role: "meysam",
+      name: "Check",
+      role: "Meysam",
       startYear: 2012,
     },
     personalDetails: {},
@@ -156,7 +156,7 @@ describe("test imdb name details resolver", () => {
           1
         );
         expect(nameDetails.knownFor[0].role).toBe(
-          testData.knownFormFirstItemDetails.role.toLowerCase()
+          testData.knownFormFirstItemDetails.role
         );
         expect(nameDetails.knownFor[0].startYear).toBe(
           testData.knownFormFirstItemDetails.startYear
