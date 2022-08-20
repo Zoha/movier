@@ -34,6 +34,7 @@ import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import dayjs from "dayjs";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
 import { IMDBNextData } from "../externalInterfaces/IMDBNextDataInterface";
+import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
 
 export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private url: string;
@@ -285,9 +286,13 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as string[];
     }
-    return cacheDataManager.cacheAndReturnData([
-      ...new Set(this.allNames.map((i) => i.name)),
-    ]);
+    return cacheDataManager.cacheAndReturnData(
+      this.allNames
+        .map((i) => i.name)
+        // unique items
+        // TODO: test that this is working
+        .filter((v, i, arr) => arr.findIndex((fv) => fv === v) === i)
+    );
   }
 
   get nameInMainPage(): string {
@@ -704,17 +709,17 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as IDatesDetails;
     }
-    // pick first one that dont have a festival in its info
+    // pick first one that don't have a festival in its info
     const startDateDetails =
       this.allReleaseDates.find(
         (releaseDate) => !releaseDate.extraInfo?.includes?.("festival")
-      ) || this.allReleaseDates[0];
+      ) ?? this.allReleaseDates[0];
 
     return cacheDataManager.cacheAndReturnData({
-      startCountry: startDateDetails.country,
-      startDate: startDateDetails.date,
-      startExtraInfo: startDateDetails.extraInfo,
-      startYear: startDateDetails.date?.getUTCFullYear() ?? 2020,
+      startCountry: startDateDetails?.country ?? "",
+      startDate: startDateDetails?.date ?? "",
+      startExtraInfo: startDateDetails?.extraInfo ?? "",
+      startYear: startDateDetails?.date?.getUTCFullYear() ?? this.titleYear,
       titleYear: this.titleYear,
       isEnded: this.isEnded,
       ...(this.isEnded
@@ -807,18 +812,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return thumbnails.filter((i) => !!i);
   }
 
-  getFullSizeImageFromThumbnailUrl(thumbnailUrl?: string): string {
-    if (!thumbnailUrl || typeof thumbnailUrl !== "string") {
-      return "";
-    }
-    if (/@.+/i.test(thumbnailUrl)) {
-      return thumbnailUrl.split("@").slice(0, -1).join("@") + "@.jpg";
-    } else if (/\._V1.+/i.test(thumbnailUrl)) {
-      return thumbnailUrl.split("._V1").slice(0, -1).join("") + ".jpg";
-    }
-    return "";
-  }
-
   get posterImage(): IImageDetails {
     const cacheDataManager = this.resolverCacheManager.load("posterImage");
     if (cacheDataManager.hasData) {
@@ -828,7 +821,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const imgEl = $("[data-testid='hero-media__poster'] img").first();
     const srcset = imgEl.attr("srcset");
     const urlSrc = imgEl.attr("src");
-    const url = this.getFullSizeImageFromThumbnailUrl(urlSrc);
+    const url = getIMDBFullSizeImageFromThumbnailUrl(urlSrc);
     const type = ImageType.Poster;
     const original: IImageDetails = {
       title: `${this.name} ${this.titleYear}`,
@@ -854,7 +847,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const images: IImageDetails[] = [];
     const $p = this.posterImagesFirstPageCheerio;
     const $s = this.stillFrameImagesFirstPageCheerio;
-    const resolverInstance = this;
     [
       {
         type: ImageType.Poster,
@@ -873,9 +865,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
           sourceType: Source.IMDB,
           title,
           type,
-          url: resolverInstance.getFullSizeImageFromThumbnailUrl(
-            thumb100ImageUrl
-          ),
+          url: getIMDBFullSizeImageFromThumbnailUrl(thumb100ImageUrl),
           thumbnails: [
             ...(thumb100ImageUrl
               ? [
@@ -916,7 +906,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       .first()
       .text();
     const [, budgetWithCommas] =
-      /\$([\d,]+)\s\(estimated\)/.exec(formatHTMLText(budgetRawText)) || [];
+      /\$([\d,]+)\s\(estimated\)/.exec(
+        formatHTMLText(budgetRawText, { toLowerCase: true })
+      ) || [];
     const budget = this.convertDividedHTMLTextToNumber(budgetWithCommas);
     const sellInMainCountriesElText = $(
       "[data-testid='title-boxoffice-grossdomestic']"
@@ -1016,7 +1008,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       });
     if (
       taglines.length === 1 &&
-      taglines[0]?.includes("we don't have any taglines")
+      taglines[0]?.toLowerCase().includes("we don't have any taglines")
     ) {
       taglines = [];
     }
@@ -1087,7 +1079,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
             const trsLength = Number(td.attr("rowspan"));
 
             const outcome =
-              formatHTMLText(td.find("b").first().text()) === "winner"
+              formatHTMLText(td.find("b").first().text(), {
+                toLowerCase: true,
+              }) === "winner"
                 ? AwardOutcome.Winner
                 : AwardOutcome.Nominee;
 
@@ -1166,7 +1160,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     let wins = 0;
     $("td.title_award_outcome").each(function () {
       const td = $(this);
-      const text = formatHTMLText(td.text());
+      const text = formatHTMLText(td.text(), { toLowerCase: true });
       const length = Number(td.attr("rowspan"));
       totalNominations += length;
       if (text.includes("winner")) {

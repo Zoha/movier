@@ -1,6 +1,13 @@
-export function formatHTMLText(originalText?: string) {
+export function formatHTMLText(
+  originalText?: string,
+  { toLowerCase = false } = {}
+) {
   if (!originalText) {
     return "";
   }
-  return originalText.trim().replace(/\n/g, "").toLowerCase();
+  let finalResult = originalText.trim().replace(/\n/g, "");
+  if (toLowerCase) {
+    finalResult = finalResult.toLocaleLowerCase();
+  }
+  return finalResult;
 }

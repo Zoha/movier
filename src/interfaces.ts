@@ -157,6 +157,14 @@ export interface IFoundedTitleDetails {
   thumbnailImageUrl: string;
 }
 
+export interface IFoundedPersonDetails {
+  source: ISourceDetails;
+  name: string;
+  url: string;
+  matchScore: number;
+  thumbnailImageUrl: string;
+}
+
 export interface IRuntimeDetails {
   title: string;
   hours: number;
@@ -193,4 +201,58 @@ export interface ITitleDetailsResolver {
 
 export interface ITitleSearchResolver {
   getResult(): Promise<IFoundedTitleDetails[]>;
+}
+export interface IPersonSearchResolver {
+  getResult(): Promise<IFoundedPersonDetails[]>;
+}
+
+export interface IPersonDetailsResolver {
+  getDetails(): Promise<IPerson | undefined>;
+}
+
+export interface IPerson {
+  detailsLang: Language;
+  mainSource: ISourceDetails;
+  name: string;
+  birthDate?: Date;
+  birthPlace?: string;
+  miniBio: string[];
+  knownFor: IKnownForItem[];
+  filmography: IFilmographyItem[];
+  personalDetails: IPersonalDetailItem[];
+  profileImage?: IImageDetails;
+  allImages: IImageDetails[];
+  deathDate?: Date;
+  deathPlace?: string;
+}
+
+export interface IKnownForItem {
+  source: ISourceDetails;
+  posterImage: IImageDetails;
+  name: string;
+  role: string;
+  startYear: number;
+  endYear: number;
+}
+
+export interface IFilmographyItem {
+  source: ISourceDetails;
+  name: string;
+  type: TitleMainType;
+  startYear: number;
+  endYear: number;
+  productionStatus: string;
+  role: string;
+  category: string; // TODO: make an enum for this
+}
+
+export interface IPersonalDetailItem {
+  title: string;
+  details: string;
+  relatedSources: ISourceDetails[];
+}
+
+export enum IMDBPathType {
+  Title = "title",
+  Name = "name",
 }

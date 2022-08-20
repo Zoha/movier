@@ -1,5 +1,6 @@
 export enum Source {
   IMDB = "IMDB",
+  Unknown = "unknown",
 }
 export enum Genre {
   Action = "action",
@@ -51,5 +52,6 @@ export enum ImageType {
   StillFrame = "stillFrame",
   Event = "event",
   VideoImage = "videoImage",
+  ProfileImage = "profileImage",
   Other = "other",
 }

@@ -26,12 +26,10 @@ or using yarn
 
 ## Usage
 
-### Title information
+### Title information (movies/series)
+get title complete details
 
-all movie details methods finally return a [title result](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
-that you can see as an example on this file [here](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
-
-useful methods that are exported from the package, note that all these methods will return a [title details result object](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
+note that all these methods will return a [title details result object](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResults.json)
 ```JAVASCRIPT
     // find a title and returns the first matched title data
     movier.getTitleDetailsByName("interstellar 2014")
@@ -43,7 +41,8 @@ useful methods that are exported from the package, note that all these methods w
     movier.getTitleDetailsByFoundedTitleDetails(foundedDetails)
 ```
 
-the result would be like this, you can see a full json example [here](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
+all these methods will return an object like the below or will throw an error if the title is not found, you can see a complete example of the result object [here](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResults.json)
+
 
 ```JAVASCRIPT
 {
@@ -81,7 +80,7 @@ the result would be like this, you can see a full json example [here](https://ra
 }
 ```
 
-### Search for titles
+### Search for titles (movies/series)
 
 you can search for a title by its name using this method
 ```JAVASCRIPT
@@ -89,7 +88,7 @@ you can search for a title by its name using this method
     movier.searchTitleByName("interstellar 2014")
 ```
 
-this method returns an [array of found items details](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTItleSearchResult.json), that its structure would be like this 
+this method returns an [array of found items details](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleSearchResults.json), that its structure would be like this 
 
 ```JAVASCRIPT
 [ 
@@ -106,6 +105,62 @@ this method returns an [array of found items details](https://raw.githubusercont
    ...
 ]
 ```
+
+### get person details (celebs)
+
+```JAVASCRIPT
+    // find a person and returns the first matched data
+    movier.getPersonDetailsByName("jennifer lawrence")
+    // get person details by url
+    movier.getPersonDetailsByUrl("https://www.imdb.com/name/nm2225369")
+    // get person details by IMDB id
+    movier.getPersonDetailsByIMDBId("nm2225369")
+    // get name details by returned object from searchPersonByName function
+    movier.getPersonDetailsByFoundedPersonDetails(foundedDetails)
+```
+
+all these methods will return an object like the below or will throw an error if the person is not found, you can see a complete example of the result object [here](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/jenniferLawrencePersonResults.json)
+
+```JAVASCRIPT
+{
+  detailsLang: "...",
+  mainSource: {...},
+  name: "...",
+  birthDate: DATE,
+  birthPlace: "...",
+  miniBio: [...],
+  knownFor: [...],
+  filmography: [...],
+  personalDetails: [...],
+  profileImage: {...},
+  allImages: [...]
+}
+```
+
+### search for people (celebs)
+
+you can search for people by their name using this method
+```JAVASCRIPT
+    // search for title
+    movier.searchPersonByName("jennifer lawrence")
+```
+
+this method returns an [array of found items details](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/jenniferLawrencePersonSerachResults.json), that its structure would be like this 
+
+```JAVASCRIPT
+[ 
+    {
+        source: {...},
+        name: "...",
+        url: "...",
+        matchScore: ...,
+        thumbnailImageUrl: "..."
+   },
+   ...
+]
+```
+
+
 
 ## Test
 
