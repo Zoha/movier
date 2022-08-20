@@ -9,7 +9,7 @@ export type TestDataType = {
   birthPlace?: string;
   filmographyData: object;
   knownFormFirstItemDetails: {
-    name: string;
+    name: string | string[];
     role: string;
     startYear: number;
     endYear?: number;
@@ -99,7 +99,7 @@ const dataToTest: TestDataType[] = [
       actor: 10,
     },
     knownFormFirstItemDetails: {
-      name: "Check",
+      name: ["Check", "Cheque"],
       role: "Meysam",
       startYear: 2012,
     },
@@ -162,9 +162,18 @@ describe("test imdb name details resolver", () => {
         });
         expect(nameDetails.profileImage?.url.length).toBeGreaterThan(1);
         expect(nameDetails.knownFor.length).toBeGreaterThanOrEqual(4);
-        expect(nameDetails.knownFor[0].name).toBe(
-          testData.knownFormFirstItemDetails.name
-        );
+        if (typeof testData.knownFormFirstItemDetails.name === "string") {
+          expect(nameDetails.knownFor[0].name).toBe(
+            testData.knownFormFirstItemDetails.name
+          );
+        } else {
+          expect(
+            !!testData.knownFormFirstItemDetails.name.find(
+              (i) => i === nameDetails.knownFor[0].name
+            )
+          ).toBe(true);
+        }
+
         expect(nameDetails.knownFor[0].posterImage.url.length).toBeGreaterThan(
           1
         );
