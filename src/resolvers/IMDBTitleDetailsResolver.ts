@@ -33,6 +33,8 @@ import { formatHTMLText } from "../utils/formatHTMLText";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import dayjs from "dayjs";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
+import { IMDBNextData } from "../externalInterfaces/IMDBNextDataInterface";
+import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
 
 export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private url: string;
@@ -58,6 +60,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private stillFrameImagesFirstPageCheerio!: CheerioAPI;
   private awardsPageCheerio!: CheerioAPI;
 
+  private mainPageNextData!: IMDBNextData;
+
   constructor(url: string) {
     this.url = url;
   }
@@ -82,6 +86,10 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const apiResult = await axios.get(this.url);
     this.mainPageHTMLData = apiResult.data;
     this.mainPageCheerio = loadCheerio(this.mainPageHTMLData);
+    const nextDataString =
+      this.mainPageCheerio("#__NEXT_DATA__")?.html()?.trim() || "{}";
+
+    this.mainPageNextData = JSON.parse(nextDataString);
   }
 
   async getReleaseInfoPageHTMLData() {
@@ -199,7 +207,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       allImages: this.allImages,
       boxOffice: this.boxOffice,
       productionCompanies: this.productionCompanies,
-      storyline: this.storyline,
       taglines: this.taglines,
       runtime: this.runtime,
       keywords: this.keywords,
@@ -279,9 +286,13 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as string[];
     }
-    return cacheDataManager.cacheAndReturnData([
-      ...new Set(this.allNames.map((i) => i.name)),
-    ]);
+    return cacheDataManager.cacheAndReturnData(
+      this.allNames
+        .map((i) => i.name)
+        // unique items
+        // TODO: test that this is working
+        .filter((v, i, arr) => arr.findIndex((fv) => fv === v) === i)
+    );
   }
 
   get nameInMainPage(): string {
@@ -324,25 +335,16 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get genres(): Genre[] {
-    const cacheDataManager = this.resolverCacheManager.load("genres");
-    if (cacheDataManager.hasData) {
-      return cacheDataManager.data as Genre[];
-    }
-    const $ = this.mainPageCheerio;
-    const originalIMDBGenres: string[] = [];
-    $("[data-testid='storyline-genres'] a").each(function () {
-      originalIMDBGenres.push($(this).text());
-    });
+    const genresInNextData =
+      this.mainPageNextData.props?.pageProps?.aboveTheFoldData?.genres?.genres?.map(
+        (genre) => genre.text || ""
+      ) || [];
 
     const genreEnumValues = Object.values(Genre);
 
-    return cacheDataManager.cacheAndReturnData(
-      originalIMDBGenres
-        .map((genre) => camelCase(genre))
-        .filter((oGenre) =>
-          genreEnumValues.includes(oGenre as Genre)
-        ) as Genre[]
-    );
+    return genresInNextData
+      .map((genre) => camelCase(genre))
+      .filter((oGenre) => genreEnumValues.includes(oGenre as Genre)) as Genre[];
   }
 
   extractSourceDetailsFromAElement(
@@ -707,17 +709,17 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as IDatesDetails;
     }
-    // pick first one that dont have a festival in its info
+    // pick first one that don't have a festival in its info
     const startDateDetails =
       this.allReleaseDates.find(
         (releaseDate) => !releaseDate.extraInfo?.includes?.("festival")
-      ) || this.allReleaseDates[0];
+      ) ?? this.allReleaseDates[0];
 
     return cacheDataManager.cacheAndReturnData({
-      startCountry: startDateDetails.country,
-      startDate: startDateDetails.date,
-      startExtraInfo: startDateDetails.extraInfo,
-      startYear: startDateDetails.date?.getUTCFullYear() ?? 2020,
+      startCountry: startDateDetails?.country ?? "",
+      startDate: startDateDetails?.date ?? "",
+      startExtraInfo: startDateDetails?.extraInfo ?? "",
+      startYear: startDateDetails?.date?.getUTCFullYear() ?? this.titleYear,
       titleYear: this.titleYear,
       isEnded: this.isEnded,
       ...(this.isEnded
@@ -810,18 +812,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return thumbnails.filter((i) => !!i);
   }
 
-  getFullSizeImageFromThumbnailUrl(thumbnailUrl?: string): string {
-    if (!thumbnailUrl || typeof thumbnailUrl !== "string") {
-      return "";
-    }
-    if (/@.+/i.test(thumbnailUrl)) {
-      return thumbnailUrl.split("@").slice(0, -1).join("@") + "@.jpg";
-    } else if (/\._V1.+/i.test(thumbnailUrl)) {
-      return thumbnailUrl.split("._V1").slice(0, -1).join("") + ".jpg";
-    }
-    return "";
-  }
-
   get posterImage(): IImageDetails {
     const cacheDataManager = this.resolverCacheManager.load("posterImage");
     if (cacheDataManager.hasData) {
@@ -831,7 +821,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const imgEl = $("[data-testid='hero-media__poster'] img").first();
     const srcset = imgEl.attr("srcset");
     const urlSrc = imgEl.attr("src");
-    const url = this.getFullSizeImageFromThumbnailUrl(urlSrc);
+    const url = getIMDBFullSizeImageFromThumbnailUrl(urlSrc);
     const type = ImageType.Poster;
     const original: IImageDetails = {
       title: `${this.name} ${this.titleYear}`,
@@ -857,7 +847,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const images: IImageDetails[] = [];
     const $p = this.posterImagesFirstPageCheerio;
     const $s = this.stillFrameImagesFirstPageCheerio;
-    const resolverInstance = this;
     [
       {
         type: ImageType.Poster,
@@ -876,9 +865,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
           sourceType: Source.IMDB,
           title,
           type,
-          url: resolverInstance.getFullSizeImageFromThumbnailUrl(
-            thumb100ImageUrl
-          ),
+          url: getIMDBFullSizeImageFromThumbnailUrl(thumb100ImageUrl),
           thumbnails: [
             ...(thumb100ImageUrl
               ? [
@@ -919,7 +906,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       .first()
       .text();
     const [, budgetWithCommas] =
-      /\$([\d,]+)\s\(estimated\)/.exec(formatHTMLText(budgetRawText)) || [];
+      /\$([\d,]+)\s\(estimated\)/.exec(
+        formatHTMLText(budgetRawText, { toLowerCase: true })
+      ) || [];
     const budget = this.convertDividedHTMLTextToNumber(budgetWithCommas);
     const sellInMainCountriesElText = $(
       "[data-testid='title-boxoffice-grossdomestic']"
@@ -1004,27 +993,6 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return cacheDataManager.cacheAndReturnData(productionCompanies);
   }
 
-  get storyline(): string {
-    const cacheDataManager = this.resolverCacheManager.load("storyline");
-    if (cacheDataManager.hasData) {
-      return cacheDataManager.data as string;
-    }
-    const $ = this.mainPageCheerio;
-    return cacheDataManager.cacheAndReturnData(
-      formatHTMLText(
-        $("[data-testid='storyline-plot-summary']")
-          .find(".ipc-html-content")
-          .find("div")
-          .first()
-          .contents()
-          .filter(function () {
-            return this.nodeType == 3;
-          })
-          .text()
-      )
-    );
-  }
-
   get taglines(): string[] {
     const cacheDataManager = this.resolverCacheManager.load("taglines");
     if (cacheDataManager.hasData) {
@@ -1040,7 +1008,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       });
     if (
       taglines.length === 1 &&
-      taglines[0]?.includes("we don't have any taglines")
+      taglines[0]?.toLowerCase().includes("we don't have any taglines")
     ) {
       taglines = [];
     }
@@ -1072,21 +1040,11 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get keywords(): string[] {
-    const cacheDataManager = this.resolverCacheManager.load("keywords");
-    if (cacheDataManager.hasData) {
-      return cacheDataManager.data as string[];
-    }
-    const $ = this.mainPageCheerio;
-    const keywords: string[] = [];
-    $("[data-testid='storyline-plot-keywords'] a span").each(function () {
-      const keyword = formatHTMLText($(this).text());
-      // exclude keyword if it says \d more item ( for more tags )
-      if (/more$/.test(keyword)) {
-        return;
-      }
-      keywords.push(keyword);
-    });
-    return cacheDataManager.cacheAndReturnData(keywords);
+    return (
+      this.mainPageNextData.props?.pageProps?.aboveTheFoldData?.keywords?.edges
+        ?.map((i) => i.node?.text || "")
+        .filter((i) => !!i) || []
+    );
   }
 
   get awards(): IAwardDetails[] {
@@ -1121,7 +1079,9 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
             const trsLength = Number(td.attr("rowspan"));
 
             const outcome =
-              formatHTMLText(td.find("b").first().text()) === "winner"
+              formatHTMLText(td.find("b").first().text(), {
+                toLowerCase: true,
+              }) === "winner"
                 ? AwardOutcome.Winner
                 : AwardOutcome.Nominee;
 
@@ -1200,7 +1160,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     let wins = 0;
     $("td.title_award_outcome").each(function () {
       const td = $(this);
-      const text = formatHTMLText(td.text());
+      const text = formatHTMLText(td.text(), { toLowerCase: true });
       const length = Number(td.attr("rowspan"));
       totalNominations += length;
       if (text.includes("winner")) {

@@ -26,13 +26,11 @@ or using yarn
 
 ## Usage
 
-### Title information
+### Title information (movies/series)
+get title complete details
 
-all movie details methods finally return a [title result](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
-that you can see as an example on this file [here](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
-
-useful methods that are exported from the package, note that all these methods will return a [title details result object](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResult.json)
-
+note that all these methods will return a [title details result object](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResults.json)
+```JAVASCRIPT
     // find a title and returns the first matched title data
     movier.getTitleDetailsByName("interstellar 2014")
     // get title info by its url
@@ -41,16 +39,128 @@ useful methods that are exported from the package, note that all these methods w
     movier.getTitleDetailsByIMDBId("tt0816692")
     // find title by returned object from searchTitleByName function
     movier.getTitleDetailsByFoundedTitleDetails(foundedDetails)
+```
 
-### Search for titles
+all these methods will return an object like the below or will throw an error if the title is not found, you can see a complete example of the result object [here](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleResults.json)
+
+
+```JAVASCRIPT
+{
+    detailsLang : "...", 
+    mainSource : {...}, 
+    allSources : [...], 
+    name : "...", 
+    worldWideName : "...",
+    otherNames : [...],
+    titleYear : ...,
+    genres : [...],
+    directors : [...],
+    writers : [...], 
+    mainType : "...",
+    plot : "...",
+    casts : [...],
+    producers : [...],
+    mainRate : {...},
+    allRates : [...],
+    allReleaseDates : [...],
+    dates : {...},
+    ageCategoryTitle : "...",
+    languages : [...],
+    countriesOfOrigin : [...],
+    posterImage : {...},
+    allImages : [...],
+    boxOffice : {...},
+    productionCompanies : [...],
+    taglines : [...],
+    runtime : {...},
+    keywords : [...],
+    awards : [...],
+    awardsSummary : {...},
+    otherLangs : [...]
+}
+```
+
+### Search for titles (movies/series)
 
 you can search for a title by its name using this method
-
+```JAVASCRIPT
     // search for title
     movier.searchTitleByName("interstellar 2014")
-    return [{name, titleYear, aka, url, titleType, ....}]
+```
 
-this method returns an [array of found items details](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTItleSearchResult.json)
+this method returns an [array of found items details](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/interstellarTitleSearchResults.json), that its structure would be like this 
+
+```JAVASCRIPT
+[ 
+    {
+        source: {...},
+        name: "...",
+        aka: "...",
+        titleYear: ...,
+        url: "...",
+        titleType: "...",
+        matchScore: ...,
+        thumbnailImageUrl: "..."
+   },
+   ...
+]
+```
+
+### get person details (celebs)
+
+```JAVASCRIPT
+    // find a person and returns the first matched data
+    movier.getPersonDetailsByName("jennifer lawrence")
+    // get person details by url
+    movier.getPersonDetailsByUrl("https://www.imdb.com/name/nm2225369")
+    // get person details by IMDB id
+    movier.getPersonDetailsByIMDBId("nm2225369")
+    // get name details by returned object from searchPersonByName function
+    movier.getPersonDetailsByFoundedPersonDetails(foundedDetails)
+```
+
+all these methods will return an object like the below or will throw an error if the person is not found, you can see a complete example of the result object [here](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/jenniferLawrencePersonResults.json)
+
+```JAVASCRIPT
+{
+  detailsLang: "...",
+  mainSource: {...},
+  name: "...",
+  birthDate: DATE,
+  birthPlace: "...",
+  miniBio: [...],
+  knownFor: [...],
+  filmography: [...],
+  personalDetails: [...],
+  profileImage: {...},
+  allImages: [...]
+}
+```
+
+### search for people (celebs)
+
+you can search for people by their name using this method
+```JAVASCRIPT
+    // search for title
+    movier.searchPersonByName("jennifer lawrence")
+```
+
+this method returns an [array of found items details](https://raw.githubusercontent.com/Zoha/movier/main/examples/results/jenniferLawrencePersonSerachResults.json), that its structure would be like this 
+
+```JAVASCRIPT
+[ 
+    {
+        source: {...},
+        name: "...",
+        url: "...",
+        matchScore: ...,
+        thumbnailImageUrl: "..."
+   },
+   ...
+]
+```
+
+
 
 ## Test
 
@@ -61,6 +171,10 @@ execute tests via `yarn test` command after installing packages
 for supporting this package just buy me a coffee :)
 
 [!["Buy Me A Coffee"](https://www.buymeacoffee.com/assets/img/custom_images/orange_img.png)](https://www.buymeacoffee.com/zoha)
+
+## contributing
+
+please read [this](https://github.com/Zoha/movier/blob/main/CONTRIBUTING.md) for more information
 
 ## license
 
