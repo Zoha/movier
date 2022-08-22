@@ -46,11 +46,7 @@
     "hố đen tử thần"
   ],
   "titleYear": 2014,
-  "genres": [
-    "adventure",
-    "drama",
-    "sciFi"
-  ],
+  "genres": ["adventure", "drama", "sciFi"],
   "directors": [
     {
       "source": {
@@ -231,9 +227,7 @@
         "sourceId": "nm0565133"
       },
       "name": "francis x. mccarthy",
-      "otherNames": [
-        "francis xavier mccarthy"
-      ],
+      "otherNames": ["francis xavier mccarthy"],
       "roles": [
         {
           "source": {
@@ -473,9 +467,7 @@
         "sourceId": "nm5291430"
       },
       "name": "william dickinson",
-      "otherNames": [
-        "liam dickinson"
-      ],
+      "otherNames": ["liam dickinson"],
       "roles": [
         {
           "source": {
@@ -1510,14 +1502,8 @@
     "isEnded": false
   },
   "ageCategoryTitle": "pg-13",
-  "languages": [
-    "english"
-  ],
-  "countriesOfOrigin": [
-    "united states",
-    "united kingdom",
-    "canada"
-  ],
+  "languages": ["english"],
+  "countriesOfOrigin": ["united states", "united kingdom", "canada"],
   "posterImage": {
     "title": "interstellar 2014",
     "type": "poster",
@@ -3268,17 +3254,11 @@
     "budget": 165000000,
     "worldwide": 701729206,
     "mainCountries": {
-      "countries": [
-        "us",
-        "canada"
-      ],
+      "countries": ["us", "canada"],
       "amount": 188020017
     },
     "opening": {
-      "countries": [
-        "us",
-        "canada"
-      ],
+      "countries": ["us", "canada"],
       "amount": 47510360,
       "date": "2014-11-08T20:30:00.000Z"
     }
@@ -8778,6 +8758,5 @@
     "wins": 44,
     "oscarWins": 1,
     "emmyWins": 0
-  },
-  "otherLangs": []
+  }
 }
