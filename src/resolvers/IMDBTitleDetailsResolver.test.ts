@@ -33,6 +33,9 @@ export interface ITitleTestData {
       sourceId?: string | null;
       rolesLength: number;
       firstRoleName: string;
+      episodes?: number;
+      startYear?: number;
+      endYear?: number;
     }[];
   };
   mainRate: {
@@ -197,6 +200,9 @@ const titlesToTest: ITitleTestData[] = [
           sourceId: "nm0227759",
           rolesLength: 1,
           firstRoleName: "tyrion lannister",
+          episodes: 67,
+          startYear: 2011,
+          endYear: 2019,
         },
         {
           index: 5,
@@ -311,6 +317,11 @@ describe("imdb title details resolver", () => {
           }
           expect(cast.roles.length).toBe(castData.rolesLength);
           expect(cast.roles[0].name.toLowerCase()).toBe(castData.firstRoleName);
+          if (castData.episodes) {
+            expect(cast.episodeCredits?.totalEpisodes).toBe(castData.episodes);
+            expect(cast.episodeCredits?.startYear).toBe(castData.startYear);
+            expect(cast.episodeCredits?.endYear).toBe(castData.endYear);
+          }
         }
 
         const mainRate = result.mainRate;

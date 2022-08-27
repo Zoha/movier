@@ -690,7 +690,10 @@ enum CharacterTypename {
 
 interface EpisodeCredits {
   total?: number;
-  yearRange?: null;
+  yearRange?: {
+    year: number;
+    endYear: number;
+  };
   typename?: EpisodeCreditsTypename;
 }
 

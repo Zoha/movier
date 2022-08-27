@@ -27,6 +27,7 @@ import {
   IRuntimeDetails,
   IAwardDetails,
   IAwardsSummaryDetails,
+  EpisodeCreditsDetails,
 } from "../interfaces";
 import { camelCase } from "change-case";
 import { formatHTMLText } from "../utils/formatHTMLText";
@@ -207,7 +208,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       writers: this.writers,
       mainType: this.mainType,
       plot: this.plot,
-      casts: this.cast,
+      casts: this.casts,
       producers: this.producers,
       mainRate: this.mainRate,
       allRates: this.allRates,
@@ -487,7 +488,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return cacheDataManager.cacheAndReturnData(formatHTMLText(plotText));
   }
 
-  get cast(): ICastDetails[] {
+  get casts(): ICastDetails[] {
     const cacheDataManager = this.resolverCacheManager.load("cast");
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as ICastDetails[];
@@ -498,7 +499,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return cacheDataManager.cacheAndReturnData(
       this.extractPersonInfoFromTrsForSpecificSectionId(
         "#cast",
-        (el): Omit<ICastDetails, "name" | "source"> => {
+        (el, index, extData): Omit<ICastDetails, "name" | "source"> => {
           const roles: IRoleDetails[] = [];
           el.find("td")
             .eq(3)
@@ -524,7 +525,27 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
             .find("td:eq(0) img")
             .first()
             .attr("loadlate");
-          return { otherNames, roles, thumbnailImageUrl };
+          let episodeCredits: EpisodeCreditsDetails | null = null;
+          if (this.mainType === TitleMainType.Series) {
+            // find name episode credits
+            const charDetailsInNextData =
+              this.mainPageNextData.props?.pageProps?.mainColumnData?.cast?.edges?.find(
+                (c) => c.node?.name?.id === extData.source.sourceId
+              )?.node?.episodeCredits;
+            if (charDetailsInNextData) {
+              episodeCredits = {
+                startYear: charDetailsInNextData.yearRange?.year ?? 0,
+                endYear: charDetailsInNextData.yearRange?.endYear ?? 0,
+                totalEpisodes: charDetailsInNextData.total ?? 0,
+              };
+            }
+          }
+          return {
+            otherNames,
+            roles,
+            thumbnailImageUrl,
+            ...(episodeCredits ? { episodeCredits } : {}),
+          };
         },
         {
           nameAElementSelector: "td:eq(1) a:eq(0)",
