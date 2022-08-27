@@ -68,7 +68,14 @@ export interface IRoleDetails {
 export interface ICastDetails extends IPersonDetails {
   roles: IRoleDetails[];
   otherNames?: string[];
+  episodeCredits?: EpisodeCreditsDetails;
   thumbnailImageUrl?: string;
+}
+
+export interface EpisodeCreditsDetails {
+  totalEpisodes: number;
+  startYear: number;
+  endYear: number;
 }
 
 export interface IRateAndVotesCount {

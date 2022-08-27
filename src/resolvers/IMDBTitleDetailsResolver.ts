@@ -27,6 +27,7 @@ import {
   IRuntimeDetails,
   IAwardDetails,
   IAwardsSummaryDetails,
+  EpisodeCreditsDetails,
 } from "../interfaces";
 import { camelCase } from "change-case";
 import { formatHTMLText } from "../utils/formatHTMLText";
@@ -48,6 +49,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private posterImagesFirstPageHTMLData!: string;
   private stillFrameImagesFirstPageHTMLData!: string;
   private awardsPageHTMLData!: string;
+  private criticReviewsPageHTMLData!: string;
 
   // cheerio loaded instances
   private mainPageCheerio!: CheerioAPI;
@@ -59,6 +61,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private posterImagesFirstPageCheerio!: CheerioAPI;
   private stillFrameImagesFirstPageCheerio!: CheerioAPI;
   private awardsPageCheerio!: CheerioAPI;
+  private criticReviewsPageCheerio!: CheerioAPI;
 
   private mainPageNextData!: IMDBNextData;
 
@@ -77,6 +80,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       this.getPosterImagesFirstPageHTMLData(),
       this.getStillFrameImagesFirstPageHTMLData(),
       this.getAwardsPageHTMLData(),
+      this.getCriticReviewsHTMLData(),
     ]);
 
     return this.generateReturnDetailsData();
@@ -118,6 +122,16 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const apiResult = await axios.get(taglinesPageUrl);
     this.taglinesPageHTMLData = apiResult.data;
     this.taglinesPageCheerio = loadCheerio(this.taglinesPageHTMLData);
+  }
+
+  async getCriticReviewsHTMLData() {
+    const criticReviewsPageUrl = this.addToPathOfUrl(
+      this.url,
+      "/criticreviews"
+    );
+    const apiResult = await axios.get(criticReviewsPageUrl);
+    this.criticReviewsPageHTMLData = apiResult.data;
+    this.criticReviewsPageCheerio = loadCheerio(this.criticReviewsPageHTMLData);
   }
 
   async getCompanyCreditsPageHTMLData() {
@@ -194,7 +208,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       writers: this.writers,
       mainType: this.mainType,
       plot: this.plot,
-      casts: this.cast,
+      casts: this.casts,
       producers: this.producers,
       mainRate: this.mainRate,
       allRates: this.allRates,
@@ -474,7 +488,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return cacheDataManager.cacheAndReturnData(formatHTMLText(plotText));
   }
 
-  get cast(): ICastDetails[] {
+  get casts(): ICastDetails[] {
     const cacheDataManager = this.resolverCacheManager.load("cast");
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as ICastDetails[];
@@ -485,7 +499,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return cacheDataManager.cacheAndReturnData(
       this.extractPersonInfoFromTrsForSpecificSectionId(
         "#cast",
-        (el): Omit<ICastDetails, "name" | "source"> => {
+        (el, index, extData): Omit<ICastDetails, "name" | "source"> => {
           const roles: IRoleDetails[] = [];
           el.find("td")
             .eq(3)
@@ -511,7 +525,27 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
             .find("td:eq(0) img")
             .first()
             .attr("loadlate");
-          return { otherNames, roles, thumbnailImageUrl };
+          let episodeCredits: EpisodeCreditsDetails | null = null;
+          if (this.mainType === TitleMainType.Series) {
+            // find name episode credits
+            const charDetailsInNextData =
+              this.mainPageNextData.props?.pageProps?.mainColumnData?.cast?.edges?.find(
+                (c) => c.node?.name?.id === extData.source.sourceId
+              )?.node?.episodeCredits;
+            if (charDetailsInNextData) {
+              episodeCredits = {
+                startYear: charDetailsInNextData.yearRange?.year ?? 0,
+                endYear: charDetailsInNextData.yearRange?.endYear ?? 0,
+                totalEpisodes: charDetailsInNextData.total ?? 0,
+              };
+            }
+          }
+          return {
+            otherNames,
+            roles,
+            thumbnailImageUrl,
+            ...(episodeCredits ? { episodeCredits } : {}),
+          };
         },
         {
           nameAElementSelector: "td:eq(1) a:eq(0)",
@@ -627,7 +661,11 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as IRateDetails[];
     }
-    return cacheDataManager.cacheAndReturnData([this.mainRate]);
+    const allScores = [this.mainRate];
+    if (this.metaCriticsScore) {
+      allScores.push(this.metaCriticsScore);
+    }
+    return cacheDataManager.cacheAndReturnData(allScores);
   }
 
   get allReleaseDates(): IReleaseDateDetails[] {
@@ -1192,5 +1230,27 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       oscarWins,
       emmyWins,
     });
+  }
+
+  get metaCriticsScore(): IRateDetails | null {
+    const cacheDataManager = this.resolverCacheManager.load("metaCriticsScore");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IRateDetails;
+    }
+
+    const $ = this.criticReviewsPageCheerio;
+
+    const scoreText = $("span[itemprop='ratingValue']").eq(0).text();
+    if (!scoreText) {
+      return null;
+    }
+
+    const score: IRateDetails = {
+      rate: Number(scoreText) || 0,
+      rateSource: Source.MetaCritics,
+      votesCount: Number($("span[itemprop='ratingCount']").text()) || 0,
+    };
+
+    return cacheDataManager.cacheAndReturnData(score);
   }
 }
