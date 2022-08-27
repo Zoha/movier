@@ -1,5 +1,6 @@
 export enum Source {
   IMDB = "IMDB",
+  MetaCritics = "metaCritics",
   Unknown = "unknown",
 }
 export enum Genre {

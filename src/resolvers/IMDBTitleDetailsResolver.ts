@@ -48,6 +48,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private posterImagesFirstPageHTMLData!: string;
   private stillFrameImagesFirstPageHTMLData!: string;
   private awardsPageHTMLData!: string;
+  private criticReviewsPageHTMLData!: string;
 
   // cheerio loaded instances
   private mainPageCheerio!: CheerioAPI;
@@ -59,6 +60,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private posterImagesFirstPageCheerio!: CheerioAPI;
   private stillFrameImagesFirstPageCheerio!: CheerioAPI;
   private awardsPageCheerio!: CheerioAPI;
+  private criticReviewsPageCheerio!: CheerioAPI;
 
   private mainPageNextData!: IMDBNextData;
 
@@ -77,6 +79,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       this.getPosterImagesFirstPageHTMLData(),
       this.getStillFrameImagesFirstPageHTMLData(),
       this.getAwardsPageHTMLData(),
+      this.getCriticReviewsHTMLData(),
     ]);
 
     return this.generateReturnDetailsData();
@@ -118,6 +121,16 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     const apiResult = await axios.get(taglinesPageUrl);
     this.taglinesPageHTMLData = apiResult.data;
     this.taglinesPageCheerio = loadCheerio(this.taglinesPageHTMLData);
+  }
+
+  async getCriticReviewsHTMLData() {
+    const criticReviewsPageUrl = this.addToPathOfUrl(
+      this.url,
+      "/criticreviews"
+    );
+    const apiResult = await axios.get(criticReviewsPageUrl);
+    this.criticReviewsPageHTMLData = apiResult.data;
+    this.criticReviewsPageCheerio = loadCheerio(this.criticReviewsPageHTMLData);
   }
 
   async getCompanyCreditsPageHTMLData() {
@@ -627,7 +640,11 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as IRateDetails[];
     }
-    return cacheDataManager.cacheAndReturnData([this.mainRate]);
+    const allScores = [this.mainRate];
+    if (this.metaCriticsScore) {
+      allScores.push(this.metaCriticsScore);
+    }
+    return cacheDataManager.cacheAndReturnData(allScores);
   }
 
   get allReleaseDates(): IReleaseDateDetails[] {
@@ -1192,5 +1209,27 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       oscarWins,
       emmyWins,
     });
+  }
+
+  get metaCriticsScore(): IRateDetails | null {
+    const cacheDataManager = this.resolverCacheManager.load("metaCriticsScore");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as IRateDetails;
+    }
+
+    const $ = this.criticReviewsPageCheerio;
+
+    const scoreText = $("span[itemprop='ratingValue']").eq(0).text();
+    if (!scoreText) {
+      return null;
+    }
+
+    const score: IRateDetails = {
+      rate: Number(scoreText) || 0,
+      rateSource: Source.MetaCritics,
+      votesCount: Number($("span[itemprop='ratingCount']").text()) || 0,
+    };
+
+    return cacheDataManager.cacheAndReturnData(score);
   }
 }

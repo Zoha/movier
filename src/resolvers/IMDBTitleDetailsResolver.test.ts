@@ -40,6 +40,7 @@ export interface ITitleTestData {
     minVotesCount: number;
     assortedByRateLength: number;
   };
+  metaScore?: number;
   producersMinLength: number;
   allRatesMinLength: number;
   dates: {
@@ -126,6 +127,7 @@ const titlesToTest: ITitleTestData[] = [
       minVotesCount: 1100000,
       assortedByRateLength: 10,
     },
+    metaScore: 83,
     producersMinLength: 8,
     allRatesMinLength: 1,
     dates: {
@@ -139,7 +141,7 @@ const titlesToTest: ITitleTestData[] = [
     languages: ["english", "spanish"],
     firstCountriesOfOrigin: "united states",
     posterImageUrl:
-      "https://m.media-amazon.com/images/M/MV5BZDA0OGQxNTItMDZkMC00N2UyLTg3MzMtYTJmNjg3Nzk5MzRiXkEyXkFqcGdeQXVyMjUzOTY1NTc@.jpg",
+      "https://m.media-amazon.com/images/M/MV5BNjA3NGExZDktNDlhZC00NjYyLTgwNmUtZWUzMDYwMTZjZWUyXkEyXkFqcGdeQXVyMTU1MDM3NDk0.jpg",
     posterImageThumbnailsMinLength: 3,
     allImagesMinLength: 48,
     boxofficeBudget: 237000000,
@@ -323,6 +325,12 @@ describe("imdb title details resolver", () => {
         expect(mainRate.assortedByGender?.allGenders?.allAges?.rate).toBe(
           testData.mainRate.rate
         );
+        if (testData.metaScore) {
+          expect(
+            result.allRates.find((i) => i.rateSource === Source.MetaCritics)
+              ?.rate
+          ).toBe(testData.metaScore);
+        }
         expect(result.producers.length).toBeGreaterThanOrEqual(
           testData.producersMinLength
         );
