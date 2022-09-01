@@ -39,6 +39,7 @@ export interface ITitle {
   awards: IAwardDetails[];
   awardsSummary: IAwardsSummaryDetails;
   quotes: ITitleQuoteItem[];
+  goofs: ITitleGoofItem[];
 }
 
 export interface ITitleLocale {
@@ -273,4 +274,9 @@ export interface ITitleQuoteLineItemDetails {
 export interface IQuoteCharacterDetails {
   name: string;
   playerSource: ISourceDetails;
+}
+
+export interface ITitleGoofItem {
+  groupName: string;
+  details: string;
 }

@@ -1,4 +1,8 @@
-import { ITitleQuoteItem, ITitleQuoteLineItemDetails } from "./../interfaces";
+import {
+  ITitleGoofItem,
+  ITitleQuoteItem,
+  ITitleQuoteLineItemDetails,
+} from "./../interfaces";
 import { ResolverCacheManager } from "../utils/ResolverCacheManager";
 import { load as loadCheerio, Cheerio, CheerioAPI, Element } from "cheerio";
 import axios from "axios";
@@ -51,6 +55,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private stillFrameImagesFirstPageHTMLData!: string;
   private awardsPageHTMLData!: string;
   private quotesPageHTMLData!: string;
+  private goofsPageHTMLData!: string;
   private criticReviewsPageHTMLData!: string;
 
   // cheerio loaded instances
@@ -64,6 +69,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private stillFrameImagesFirstPageCheerio!: CheerioAPI;
   private awardsPageCheerio!: CheerioAPI;
   private quotesPageCheerio!: CheerioAPI;
+  private goofsPageCheerio!: CheerioAPI;
   private criticReviewsPageCheerio!: CheerioAPI;
 
   private mainPageNextData!: IMDBNextData;
@@ -85,6 +91,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       this.getAwardsPageHTMLData(),
       this.getCriticReviewsHTMLData(),
       this.getQuotesPageHTMLData(),
+      this.getGoofsPageHTMLData(),
     ]);
 
     return this.generateReturnDetailsData();
@@ -192,6 +199,13 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     this.quotesPageCheerio = loadCheerio(this.quotesPageHTMLData);
   }
 
+  async getGoofsPageHTMLData() {
+    const goofsPageUrl = this.addToPathOfUrl(this.url, "/goofs");
+    const apiResult = await axios.get(goofsPageUrl);
+    this.goofsPageHTMLData = apiResult.data;
+    this.goofsPageCheerio = loadCheerio(this.goofsPageHTMLData);
+  }
+
   addToPathOfUrl(
     originalPath: string,
     joinPath: string,
@@ -238,6 +252,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       awards: this.awards,
       awardsSummary: this.awardsSummary,
       quotes: this.quotes,
+      goofs: this.goofs,
     };
 
     return res;
@@ -1310,5 +1325,27 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       });
 
     return cacheDataManager.cacheAndReturnData(quotes);
+  }
+
+  get goofs(): ITitleGoofItem[] {
+    const cacheDataManager = this.resolverCacheManager.load("goofs");
+    if (cacheDataManager.hasData) {
+      return cacheDataManager.data as ITitleGoofItem[];
+    }
+
+    const $ = this.goofsPageCheerio;
+    const goofs: ITitleGoofItem[] = [];
+    $("h4.li_group").each((i, el) => {
+      let target = $(el);
+      while (target.next(".sodavote").length) {
+        target = target.next(".sodavote");
+        goofs.push({
+          details: formatHTMLText(target.find(".sodatext").text()),
+          groupName: formatHTMLText($(el).text()),
+        });
+      }
+    });
+
+    return cacheDataManager.cacheAndReturnData(goofs);
   }
 }
