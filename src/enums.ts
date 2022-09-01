@@ -56,3 +56,8 @@ export enum ImageType {
   ProfileImage = "profileImage",
   Other = "other",
 }
+
+export enum IMDBPathType {
+  Title = "title",
+  Name = "name",
+}

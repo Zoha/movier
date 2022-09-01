@@ -75,7 +75,9 @@ all these methods will return an object like the below or will throw an error if
     runtime : {...},
     keywords : [...],
     awards : [...],
-    awardsSummary : {...}
+    awardsSummary : {...},
+    quotes: [...],
+    goofs: [...],
 }
 ```
 

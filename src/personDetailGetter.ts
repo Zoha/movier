@@ -1,7 +1,6 @@
-import { Source } from "./enums";
+import { Source, IMDBPathType } from "./enums";
 import {
   IFoundedPersonDetails,
-  IMDBPathType,
   IPerson,
   IPersonDetailsResolver,
 } from "./interfaces";

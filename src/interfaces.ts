@@ -38,6 +38,8 @@ export interface ITitle {
   keywords: string[];
   awards: IAwardDetails[];
   awardsSummary: IAwardsSummaryDetails;
+  quotes: ITitleQuoteItem[];
+  goofs: ITitleGoofItem[];
 }
 
 export interface ITitleLocale {
@@ -259,7 +261,22 @@ export interface IPersonalDetailItem {
   relatedSources: ISourceDetails[];
 }
 
-export enum IMDBPathType {
-  Title = "title",
-  Name = "name",
+export interface ITitleQuoteItem {
+  isSpoiler: boolean;
+  lines: ITitleQuoteLineItemDetails[];
+}
+
+export interface ITitleQuoteLineItemDetails {
+  character: IQuoteCharacterDetails;
+  line: string;
+}
+
+export interface IQuoteCharacterDetails {
+  name: string;
+  playerSource: ISourceDetails;
+}
+
+export interface ITitleGoofItem {
+  groupName: string;
+  details: string;
 }
