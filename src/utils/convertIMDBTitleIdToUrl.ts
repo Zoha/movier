@@ -1,4 +1,4 @@
-import { IMDBPathType } from "./../interfaces";
+import { IMDBPathType } from "./../enums";
 import { convertIMDBPathToIMDBUrl } from "./convertIMDBPathToIMDBUrl";
 
 export function convertIMDBTitleIdToUrl(

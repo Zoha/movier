@@ -79,6 +79,8 @@ export interface ITitleTestData {
   oscars: number;
   emmys: number;
   minNominations: number;
+  quotesLength: number;
+  spoilerQuotes: number;
 }
 
 const titlesToTest: ITitleTestData[] = [
@@ -167,6 +169,8 @@ const titlesToTest: ITitleTestData[] = [
     oscars: 3,
     emmys: 0,
     minNominations: 200,
+    quotesLength: 111,
+    spoilerQuotes: 0,
   },
   {
     url: "https://www.imdb.com/title/tt0944947/",
@@ -255,6 +259,8 @@ const titlesToTest: ITitleTestData[] = [
     oscars: 0,
     emmys: 59,
     minNominations: 632,
+    quotesLength: 36,
+    spoilerQuotes: 1,
   },
 ];
 
@@ -439,6 +445,12 @@ describe("imdb title details resolver", () => {
         expect(result.awardsSummary.totalNominations).toBeGreaterThan(
           testData.minNominations
         );
+        expect(result.quotes.length).toBeGreaterThanOrEqual(
+          testData.quotesLength
+        );
+        expect(
+          result.quotes.filter((i) => i.isSpoiler).length
+        ).toBeGreaterThanOrEqual(testData.spoilerQuotes);
       },
       200 * 1000
     );
