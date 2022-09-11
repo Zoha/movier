@@ -58,7 +58,7 @@ const dataToTest: TestDataType[] = [
       actor: 62,
       soundtrack: 4,
       producer: 18,
-      self: 194,
+      self: 193,
       thanks: 7,
     },
     knownFormFirstItemDetails: {
