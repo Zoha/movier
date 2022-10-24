@@ -89,22 +89,8 @@ const dataToTest: TestDataType[] = [
       endYear: 2019,
     },
     personalDetails: {
-      parents: ["Clarke, Jenny"],
+      parents: ["Jenny Clarke Rick Clarke"],
     },
-  },
-  {
-    name: "Shahrokh Estakhri",
-    url: "https://www.imdb.com/name/nm5427511",
-    filmographyData: {
-      actor: 10,
-    },
-    knownFormFirstItemDetails: {
-      name: ["Check", "Cheque", "Back Alleys of Shemroon"],
-      role: "Meysam",
-      startYear: 2012,
-    },
-    personalDetails: {},
-    allImagesCount: 1,
   },
 ];
 
