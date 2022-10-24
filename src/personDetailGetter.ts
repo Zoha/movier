@@ -56,7 +56,7 @@ export async function getPersonDetailsByName(
   });
   if (!allResults.length) {
     throw new Error(
-      "there wasn't any matched person with the given name : `personName`"
+      `there wasn't any matched person with the given name : '${personName}'`
     );
   }
   return getPersonDetailsByFoundedPersonDetails(allResults[0]);

@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import { IPersonalDetailItem } from "../interfaces";
 import { ImageType, Source, TitleMainType } from "../enums";
-import axios from "axios";
 import { load as loadCheerio, CheerioAPI, Cheerio, Element } from "cheerio";
 import { Language } from "../enums";
 import {
@@ -18,6 +17,7 @@ import { formatHTMLText } from "../utils/formatHTMLText";
 import { stripHTMLText } from "../utils/stripHTMLText";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
+import { getRequest } from "../requestClient";
 
 export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   private url: string;
@@ -45,21 +45,21 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   }
 
   async getMainPageHTMLData() {
-    const apiResult = await axios.get(this.url);
+    const apiResult = await getRequest(this.url);
     this.mainPageHTMLData = apiResult.data;
     this.mainPageCheerio = loadCheerio(apiResult.data);
   }
 
   async getBioPageHTMLData() {
     const url = this.addToPathOfUrl(this.url, "/bio");
-    const apiResult = await axios.get(url);
+    const apiResult = await getRequest(url);
     this.bioPageHTMLData = apiResult.data;
     this.bioPageCheerio = loadCheerio(apiResult.data);
   }
 
   async getMediaIndexPageHTMLData() {
     const url = this.addToPathOfUrl(this.url, "/mediaindex");
-    const apiResult = await axios.get(url);
+    const apiResult = await getRequest(url);
     this.mediaIndexPageHTMLData = apiResult.data;
     this.mediaIndexPageCheerio = loadCheerio(apiResult.data);
   }

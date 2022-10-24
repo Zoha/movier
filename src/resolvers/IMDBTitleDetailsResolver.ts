@@ -5,7 +5,6 @@ import {
 } from "./../interfaces";
 import { ResolverCacheManager } from "../utils/ResolverCacheManager";
 import { load as loadCheerio, Cheerio, CheerioAPI, Element } from "cheerio";
-import axios from "axios";
 import {
   AwardOutcome,
   Genre,
@@ -41,6 +40,7 @@ import dayjs from "dayjs";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
 import { IMDBNextData } from "../externalInterfaces/IMDBNextDataInterface";
 import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
+import { getRequest } from "../requestClient";
 
 export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private url: string;
@@ -98,7 +98,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   async getMainPageHTMLData() {
-    const apiResult = await axios.get(this.url);
+    const apiResult = await getRequest(this.url);
     this.mainPageHTMLData = apiResult.data;
     this.mainPageCheerio = loadCheerio(this.mainPageHTMLData);
     const nextDataString =
@@ -109,28 +109,28 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
 
   async getReleaseInfoPageHTMLData() {
     const releaseInfoPageUrl = this.addToPathOfUrl(this.url, "/releaseinfo");
-    const apiResult = await axios.get(releaseInfoPageUrl);
+    const apiResult = await getRequest(releaseInfoPageUrl);
     this.releaseInfoPageHTMLData = apiResult.data;
     this.releaseInfoPageCheerio = loadCheerio(this.releaseInfoPageHTMLData);
   }
 
   async getFullCreditsPageHTMLData() {
     const fullCreditsPageUrl = this.addToPathOfUrl(this.url, "/fullcredits");
-    const apiResult = await axios.get(fullCreditsPageUrl);
+    const apiResult = await getRequest(fullCreditsPageUrl);
     this.fullCreditsPageHTMLData = apiResult.data;
     this.fullCreditsPageCheerio = loadCheerio(this.fullCreditsPageHTMLData);
   }
 
   async getRatingsPageHTMLData() {
     const ratingsPageUrl = this.addToPathOfUrl(this.url, "/ratings");
-    const apiResult = await axios.get(ratingsPageUrl);
+    const apiResult = await getRequest(ratingsPageUrl);
     this.ratingsPageHTMLData = apiResult.data;
     this.ratingsPageCheerio = loadCheerio(this.ratingsPageHTMLData);
   }
 
   async getTaglinesPageHTMLData() {
     const taglinesPageUrl = this.addToPathOfUrl(this.url, "/taglines");
-    const apiResult = await axios.get(taglinesPageUrl);
+    const apiResult = await getRequest(taglinesPageUrl);
     this.taglinesPageHTMLData = apiResult.data;
     this.taglinesPageCheerio = loadCheerio(this.taglinesPageHTMLData);
   }
@@ -140,7 +140,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       this.url,
       "/criticreviews"
     );
-    const apiResult = await axios.get(criticReviewsPageUrl);
+    const apiResult = await getRequest(criticReviewsPageUrl);
     this.criticReviewsPageHTMLData = apiResult.data;
     this.criticReviewsPageCheerio = loadCheerio(this.criticReviewsPageHTMLData);
   }
@@ -150,7 +150,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       this.url,
       "/companycredits"
     );
-    const apiResult = await axios.get(companyCreditPageUrl);
+    const apiResult = await getRequest(companyCreditPageUrl);
     this.companyCreditPageHTMLData = apiResult.data;
     this.companyCreditPageCheerio = loadCheerio(this.companyCreditPageHTMLData);
   }
@@ -163,7 +163,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
         refine: "poster",
       }
     );
-    const apiResult = await axios.get(posterImagesFirstPageUrl);
+    const apiResult = await getRequest(posterImagesFirstPageUrl);
     this.posterImagesFirstPageHTMLData = apiResult.data;
     this.posterImagesFirstPageCheerio = loadCheerio(
       this.posterImagesFirstPageHTMLData
@@ -178,7 +178,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
         refine: "still_frame",
       }
     );
-    const apiResult = await axios.get(stillFrameImagesFirstPageUrl);
+    const apiResult = await getRequest(stillFrameImagesFirstPageUrl);
     this.stillFrameImagesFirstPageHTMLData = apiResult.data;
     this.stillFrameImagesFirstPageCheerio = loadCheerio(
       this.stillFrameImagesFirstPageHTMLData
@@ -187,21 +187,21 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
 
   async getAwardsPageHTMLData() {
     const awardsPageUrl = this.addToPathOfUrl(this.url, "/awards");
-    const apiResult = await axios.get(awardsPageUrl);
+    const apiResult = await getRequest(awardsPageUrl);
     this.awardsPageHTMLData = apiResult.data;
     this.awardsPageCheerio = loadCheerio(this.awardsPageHTMLData);
   }
 
   async getQuotesPageHTMLData() {
     const quotesPageUrl = this.addToPathOfUrl(this.url, "/quotes");
-    const apiResult = await axios.get(quotesPageUrl);
+    const apiResult = await getRequest(quotesPageUrl);
     this.quotesPageHTMLData = apiResult.data;
     this.quotesPageCheerio = loadCheerio(this.quotesPageHTMLData);
   }
 
   async getGoofsPageHTMLData() {
     const goofsPageUrl = this.addToPathOfUrl(this.url, "/goofs");
-    const apiResult = await axios.get(goofsPageUrl);
+    const apiResult = await getRequest(goofsPageUrl);
     this.goofsPageHTMLData = apiResult.data;
     this.goofsPageCheerio = loadCheerio(this.goofsPageHTMLData);
   }

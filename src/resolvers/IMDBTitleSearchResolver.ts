@@ -2,12 +2,12 @@ import { IMDB_TITLE_SEARCH_URL } from "../constants";
 import { IFoundedTitleDetails, ITitleSearchResolver } from "../interfaces";
 import { ResolverCacheManager } from "../utils/ResolverCacheManager";
 import { load as loadCheerio, CheerioAPI } from "cheerio";
-import axios from "axios";
 import { formatHTMLText } from "../utils/formatHTMLText";
 import { Source, TitleMainType } from "../enums";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import { SearchTitleByNameOptions } from "../titleSearcher";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
+import { getRequest } from "../requestClient";
 
 export class IMDBTitleSearchResolver implements ITitleSearchResolver {
   private queryName: string;
@@ -50,15 +50,11 @@ export class IMDBTitleSearchResolver implements ITitleSearchResolver {
   async loadSearchPageHTMLData() {
     const { nameWithoutYear } = this.nameWithoutYearAndRequestedYearFromQuery;
     // getting result from imdb page by http request
-    const result = await axios({
-      method: "get",
-      url: IMDB_TITLE_SEARCH_URL,
-      params: {
-        q: nameWithoutYear,
-        exact: this.exactMatch,
-        s: "tt",
-        ref: "fn_tt_ex",
-      },
+    const result = await getRequest(IMDB_TITLE_SEARCH_URL, {
+      q: nameWithoutYear,
+      exact: this.exactMatch,
+      s: "tt",
+      ref: "fn_tt_ex",
     });
 
     // parse page content for jquery like
@@ -92,6 +88,86 @@ export class IMDBTitleSearchResolver implements ITitleSearchResolver {
   }
 
   get originalResultList(): IFoundedTitleDetails[] {
+    const $ = this.searchPageCheerio;
+    const isType1 = !!$("[data-testid='find-results-section-title']")
+      .first()
+      .find(".find-title-result").length;
+    if (isType1) {
+      return this.originalResultListType1;
+    }
+    return this.originalResultListType2;
+  }
+
+  get originalResultListType1(): IFoundedTitleDetails[] {
+    const moviesList: IFoundedTitleDetails[] = [];
+    const { nameWithoutYear, requestedYear } =
+      this.nameWithoutYearAndRequestedYearFromQuery;
+    const $ = this.searchPageCheerio;
+    const queryName = this.queryName;
+
+    // find rows of result (jquery like) and push it with proper format to result list
+    $("[data-testid='find-results-section-title']")
+      .first()
+      .find(".find-title-result")
+      .each(function (index) {
+        // exclude vars from result row
+        const $this = $(this);
+        const name = formatHTMLText(
+          $this.find(".ipc-metadata-list-summary-item__t").text()
+        );
+        const aka = index == 0 ? queryName : "";
+        const desc = formatHTMLText(
+          $this.find(".ipc-metadata-list-summary-item__tl").text()
+        );
+        const titleType = /.*episode.*\s*$/i.test(desc)
+          ? TitleMainType.SeriesEpisode
+          : /.*series.*\s*$/i.test(desc)
+          ? TitleMainType.Series
+          : TitleMainType.Movie;
+        const titleYear = Number(
+          /-(\d{4})/.exec(desc)?.[1] || /(\d{4})/.exec(desc)?.[1] || ""
+        );
+        const url = convertIMDBPathToIMDBUrl(
+          $this.find("a").first().attr("href")
+        );
+
+        // calculate match score - for sorting results
+        let matchScore = 0;
+        if (index < 4) {
+          matchScore += 6 - index * 2;
+        }
+        if (name === nameWithoutYear || aka === nameWithoutYear) {
+          matchScore += 4;
+        }
+        if (titleYear && requestedYear === titleYear) {
+          matchScore += 4;
+        }
+        if ([TitleMainType.Movie, TitleMainType.Series].includes(titleType)) {
+          matchScore += 3;
+        }
+
+        // push to the final list
+        moviesList.push({
+          source: {
+            sourceId: extractIMDBIdFromUrl(url, "tt"),
+            sourceType: Source.IMDB,
+            sourceUrl: url,
+          },
+          name,
+          aka,
+          titleYear,
+          url,
+          titleType,
+          matchScore,
+          thumbnailImageUrl:
+            $this.find("img.ipc-image").first().attr("src") ?? "",
+        });
+      });
+
+    return moviesList.slice(0, 25);
+  }
+
+  get originalResultListType2(): IFoundedTitleDetails[] {
     const moviesList: IFoundedTitleDetails[] = [];
     const { nameWithoutYear, requestedYear } =
       this.nameWithoutYearAndRequestedYearFromQuery;
@@ -151,6 +227,6 @@ export class IMDBTitleSearchResolver implements ITitleSearchResolver {
         });
       });
 
-    return moviesList;
+    return moviesList.slice(0, 25);
   }
 }
