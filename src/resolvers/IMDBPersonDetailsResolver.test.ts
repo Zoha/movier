@@ -45,7 +45,7 @@ const dataToTest: TestDataType[] = [
     personalDetails: {
       spouse: ["Tarita", "nm0850454"],
       children: ["Christian Brando", "nm0113598"],
-      parents: ["Brando Sr., Marlon"],
+      parents: ["Marlon Brando Sr. Dorothy Julia Brando (Pennebaker)"],
       relatives: ["Brando"],
     },
   },
@@ -57,7 +57,7 @@ const dataToTest: TestDataType[] = [
     filmographyData: {
       actor: 62,
       soundtrack: 4,
-      producer: 18,
+      producer: 17,
       self: 193,
       thanks: 7,
     },
