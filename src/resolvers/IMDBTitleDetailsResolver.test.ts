@@ -271,6 +271,12 @@ const titlesToTest: ITitleTestData[] = [
     mainType: TitleMainType.TVSpecial,
     sourceId: "tt14544192",
   },
+  {
+    url: "https://www.imdb.com/title/tt0000041",
+    sourceId: "tt0000041",
+    name: "bataille de neige",
+    genres: [Genre.Documentary, Genre.Comedy, Genre.Short],
+  },
 ];
 
 describe("imdb title details resolver", () => {
