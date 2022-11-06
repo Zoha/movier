@@ -494,15 +494,26 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     }
     const $ = this.mainPageCheerio;
     const metaDataBoxText =
-      $("[data-testid='hero-title-block__metadata']").text()?.toLowerCase() ||
-      "";
-    return cacheDataManager.cacheAndReturnData(
-      metaDataBoxText.includes("episode")
-        ? TitleMainType.SeriesEpisode
-        : metaDataBoxText.includes("series")
-        ? TitleMainType.Series
-        : TitleMainType.Movie
-    );
+      $("[data-testid='hero-title-block__metadata'] li:first-child")
+        .text()
+        ?.toLowerCase() || "";
+
+    // TODO: also handle short and tvMiniSeries
+    const mainType = metaDataBoxText.includes("episode")
+      ? TitleMainType.SeriesEpisode
+      : metaDataBoxText.includes("series")
+      ? TitleMainType.Series
+      : metaDataBoxText.includes("tv special")
+      ? TitleMainType.TVSpecial
+      : metaDataBoxText.includes("video")
+      ? TitleMainType.Video
+      : metaDataBoxText.includes("tv movie")
+      ? TitleMainType.TVMovie
+      : metaDataBoxText.includes("tv short")
+      ? TitleMainType.TVShort
+      : TitleMainType.Movie;
+
+    return cacheDataManager.cacheAndReturnData(mainType);
   }
 
   get plot(): string {
