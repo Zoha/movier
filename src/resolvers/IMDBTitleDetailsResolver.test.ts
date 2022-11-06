@@ -5,26 +5,26 @@ import { IMDBTitleDetailsResolver } from "./IMDBTitleDetailsResolver";
 export interface ITitleTestData {
   url: string;
   name: string;
-  worldWideName: string;
+  worldWideName?: string;
   sourceId: string;
-  titleYear: number;
-  sourcesMinLength: number;
-  otherNamesMinLength: number;
-  genres: Genre[];
-  directors: {
+  titleYear?: number;
+  sourcesMinLength?: number;
+  otherNamesMinLength?: number;
+  genres?: Genre[];
+  directors?: {
     length: number;
     firstOneName: string;
     firstOneId: string;
   };
-  writers: {
+  writers?: {
     length: number;
     firstOneName: string;
     firstOneExtraInfo: string;
     firstONeSourceId: string;
   };
-  mainType: TitleMainType;
-  plotContains: string;
-  casts: {
+  mainType?: TitleMainType;
+  plotContains?: string;
+  casts?: {
     minLength: number;
     tests: {
       index?: number | null;
@@ -38,50 +38,50 @@ export interface ITitleTestData {
       endYear?: number;
     }[];
   };
-  mainRate: {
+  mainRate?: {
     rate: number;
     minVotesCount: number;
     assortedByRateLength: number;
   };
   metaScore?: number;
-  producersMinLength: number;
-  allRatesMinLength: number;
-  dates: {
+  producersMinLength?: number;
+  allRatesMinLength?: number;
+  dates?: {
     isEnded: boolean;
     startYear: number;
     startCountry: string;
     endYear: number;
   };
-  allReleaseDatesMinLength: number;
-  ageCategory: string;
-  languages: string[];
-  firstCountriesOfOrigin: string;
-  posterImageUrl: string;
-  posterImageThumbnailsMinLength: number;
-  allImagesMinLength: number;
-  boxofficeBudget: number;
-  openingAmount: number;
-  openingDateYear: number;
-  worldWideSellMin: number;
-  mainCountriesSellMin: number;
-  firstProductionCompanyName: string;
-  productionCompaniesLength: number;
-  taglinesMinLength: number;
-  firstTagline: string;
-  runtimeTitle: string;
-  runtimeHours: number;
-  runtimeMinutes: number;
-  keywordsMinLength: number;
-  onOfKeywords: string;
-  postersMinLength: number;
-  stillFrameMinLength: number;
-  awardsMinLength: number;
-  oscars: number;
-  emmys: number;
-  minNominations: number;
-  quotesLength: number;
-  spoilerQuotes: number;
-  goofsLength: number;
+  allReleaseDatesMinLength?: number;
+  ageCategory?: string;
+  languages?: string[];
+  firstCountriesOfOrigin?: string;
+  posterImageUrl?: string;
+  posterImageThumbnailsMinLength?: number;
+  allImagesMinLength?: number;
+  boxofficeBudget?: number;
+  openingAmount?: number;
+  openingDateYear?: number;
+  worldWideSellMin?: number;
+  mainCountriesSellMin?: number;
+  firstProductionCompanyName?: string;
+  productionCompaniesLength?: number;
+  taglinesMinLength?: number;
+  firstTagline?: string;
+  runtimeTitle?: string;
+  runtimeHours?: number;
+  runtimeMinutes?: number;
+  keywordsMinLength?: number;
+  onOfKeywords?: string;
+  postersMinLength?: number;
+  stillFrameMinLength?: number;
+  awardsMinLength?: number;
+  oscars?: number;
+  emmys?: number;
+  minNominations?: number;
+  quotesLength?: number;
+  spoilerQuotes?: number;
+  goofsLength?: number;
 }
 
 const titlesToTest: ITitleTestData[] = [
@@ -265,6 +265,18 @@ const titlesToTest: ITitleTestData[] = [
     spoilerQuotes: 1,
     goofsLength: 0,
   },
+  {
+    url: "https://www.imdb.com/title/tt14544192/",
+    name: "bo burnham: inside",
+    mainType: TitleMainType.TVSpecial,
+    sourceId: "tt14544192",
+  },
+  {
+    url: "https://www.imdb.com/title/tt0000041",
+    sourceId: "tt0000041",
+    name: "bataille de neige",
+    genres: [Genre.Documentary, Genre.Comedy, Genre.Short],
+  },
 ];
 
 describe("imdb title details resolver", () => {
@@ -282,114 +294,166 @@ describe("imdb title details resolver", () => {
         expect(result.mainSource.sourceId).toBe(testData.sourceId);
         expect(result.mainSource.sourceType).toBe(Source.IMDB);
         expect(result.mainSource.sourceUrl).toBe(testData.url);
-        expect(result.allSources.length).toBeGreaterThanOrEqual(
-          testData.sourcesMinLength
-        );
+        if (testData.sourcesMinLength !== undefined) {
+          expect(result.allSources.length).toBeGreaterThanOrEqual(
+            testData.sourcesMinLength
+          );
+        }
         expect(result.name.toLowerCase()).toBe(testData.name);
-        expect(result.worldWideName.toLowerCase()).toBe(testData.worldWideName);
-        expect(result.otherNames.length).toBeGreaterThan(
-          testData.otherNamesMinLength
-        );
-        expect(result.titleYear).toBe(testData.titleYear);
-        expect(result.genres).toHaveLength(testData.genres.length);
-        testData.genres.forEach((item) =>
-          expect(result.genres).toContain(item)
-        );
-        expect(result.directors).toHaveLength(testData.directors.length);
-        const director = result.directors[0];
-        expect(director.name.toLowerCase()).toBe(
-          testData.directors.firstOneName
-        );
-        expect(director.source?.sourceId).toBe(testData.directors.firstOneId);
 
-        expect(result.writers).toHaveLength(testData.writers.length);
-        const writer = result.writers[0];
-        expect(writer.name.toLowerCase()).toBe(testData.writers.firstOneName);
-        if (testData.writers.firstOneExtraInfo) {
-          expect(writer.extraInfo).toBe(testData.writers.firstOneExtraInfo);
+        if (testData.worldWideName !== undefined) {
+          expect(result.worldWideName.toLowerCase()).toBe(
+            testData.worldWideName
+          );
         }
-        expect(writer.source?.sourceId).toBe(testData.writers.firstONeSourceId);
-        expect(result.mainType).toBe(testData.mainType);
-        expect(result.plot.toLowerCase()).toContain(testData.plotContains);
-        expect(result.casts.length).toBeGreaterThan(testData.casts.minLength);
-        for (const castData of testData.casts.tests) {
-          const cast = castData.finderF
-            ? result.casts.find(castData.finderF)
-            : result.casts[castData.index || 0];
-          expect(cast).not.toBe(undefined);
-          if (!cast) {
-            return;
-          }
-          expect(cast.name.toLowerCase()).toBe(castData.name);
-          if (castData.sourceId) {
-            expect(cast.source?.sourceId).toBe(castData.sourceId);
-          }
-          expect(cast.roles.length).toBe(castData.rolesLength);
-          expect(cast.roles[0].name.toLowerCase()).toBe(castData.firstRoleName);
-          if (castData.episodes) {
-            expect(cast.episodeCredits?.totalEpisodes).toBe(castData.episodes);
-            expect(cast.episodeCredits?.startYear).toBe(castData.startYear);
-            expect(cast.episodeCredits?.endYear).toBe(castData.endYear);
-          }
+        if (testData.otherNamesMinLength !== undefined) {
+          expect(result.otherNames.length).toBeGreaterThan(
+            testData.otherNamesMinLength
+          );
+        }
+        if (testData.titleYear !== undefined) {
+          expect(result.titleYear).toBe(testData.titleYear);
+        }
+        if (testData.genres !== undefined) {
+          expect(result.genres).toHaveLength(testData.genres.length);
+          testData.genres.forEach((item) =>
+            expect(result.genres).toContain(item)
+          );
+        }
+        if (testData.directors !== undefined) {
+          expect(result.directors).toHaveLength(testData.directors.length);
+          const director = result.directors[0];
+          expect(director.name.toLowerCase()).toBe(
+            testData.directors.firstOneName
+          );
+          expect(director.source?.sourceId).toBe(testData.directors.firstOneId);
         }
 
-        const mainRate = result.mainRate;
-        expect(mainRate.rate).toBe(testData.mainRate.rate);
-        expect(mainRate.votesCount).toBeGreaterThan(
-          testData.mainRate.minVotesCount
-        );
-        expect(mainRate.rateSource).toBe(Source.IMDB);
-        expect(mainRate.assortedByRate).toHaveLength(
-          testData.mainRate.assortedByRateLength
-        );
-        expect(mainRate.assortedByGender?.allGenders?.allAges?.rate).toBe(
-          testData.mainRate.rate
-        );
-        if (testData.metaScore) {
+        if (testData.writers !== undefined) {
+          expect(result.writers).toHaveLength(testData.writers.length);
+          const writer = result.writers[0];
+          expect(writer.name.toLowerCase()).toBe(testData.writers.firstOneName);
+          if (testData.writers.firstOneExtraInfo) {
+            expect(writer.extraInfo).toBe(testData.writers.firstOneExtraInfo);
+          }
+          expect(writer.source?.sourceId).toBe(
+            testData.writers.firstONeSourceId
+          );
+        }
+        if (testData.mainType !== undefined) {
+          expect(result.mainType).toBe(testData.mainType);
+        }
+        if (testData.plotContains !== undefined) {
+          expect(result.plot.toLowerCase()).toContain(testData.plotContains);
+        }
+        if (testData.casts !== undefined) {
+          expect(result.casts.length).toBeGreaterThan(testData.casts.minLength);
+          for (const castData of testData.casts.tests) {
+            const cast = castData.finderF
+              ? result.casts.find(castData.finderF)
+              : result.casts[castData.index || 0];
+            expect(cast).not.toBe(undefined);
+            if (!cast) {
+              return;
+            }
+            expect(cast.name.toLowerCase()).toBe(castData.name);
+            if (castData.sourceId) {
+              expect(cast.source?.sourceId).toBe(castData.sourceId);
+            }
+            expect(cast.roles.length).toBe(castData.rolesLength);
+            expect(cast.roles[0].name.toLowerCase()).toBe(
+              castData.firstRoleName
+            );
+            if (castData.episodes) {
+              expect(cast.episodeCredits?.totalEpisodes).toBe(
+                castData.episodes
+              );
+              expect(cast.episodeCredits?.startYear).toBe(castData.startYear);
+              expect(cast.episodeCredits?.endYear).toBe(castData.endYear);
+            }
+          }
+        }
+
+        if (testData.mainRate !== undefined) {
+          const mainRate = result.mainRate;
+          expect(mainRate.rate).toBe(testData.mainRate.rate);
+          expect(mainRate.votesCount).toBeGreaterThan(
+            testData.mainRate.minVotesCount
+          );
+          expect(mainRate.rateSource).toBe(Source.IMDB);
+          expect(mainRate.assortedByRate).toHaveLength(
+            testData.mainRate.assortedByRateLength
+          );
+          expect(mainRate.assortedByGender?.allGenders?.allAges?.rate).toBe(
+            testData.mainRate.rate
+          );
+        }
+
+        if (testData.metaScore !== undefined) {
           expect(
             result.allRates.find((i) => i.rateSource === Source.MetaCritics)
               ?.rate
           ).toBe(testData.metaScore);
         }
-        expect(result.producers.length).toBeGreaterThanOrEqual(
-          testData.producersMinLength
-        );
-        expect(result.allRates.length).toBeGreaterThanOrEqual(
-          testData.allRatesMinLength
-        );
-        expect(result.dates.isEnded).toBe(testData.dates.isEnded);
-        expect(result.dates.startYear).toBe(testData.dates.startYear);
-        expect(result.dates.startDate.getFullYear()).toBe(
-          testData.dates.startYear
-        );
-        if (testData.dates.endYear) {
-          expect(result.dates.endYear).toBe(testData.dates.endYear);
-        }
-        expect(result.dates.startCountry.toLocaleLowerCase()).toBe(
-          testData.dates.startCountry
-        );
-        expect(result.allReleaseDates.length).toBeGreaterThanOrEqual(
-          testData.allReleaseDatesMinLength
-        );
-
-        expect(result.ageCategoryTitle.toLowerCase()).toBe(
-          testData.ageCategory
-        );
-        Array.from(Array(testData.languages?.length)).forEach((v, i) => {
-          expect(result.languages[i].toLocaleLowerCase()).toBe(
-            testData.languages[i]
+        if (testData.producersMinLength !== undefined) {
+          expect(result.producers.length).toBeGreaterThanOrEqual(
+            testData.producersMinLength
           );
-        });
-        expect(result.countriesOfOrigin[0].toLocaleLowerCase()).toBe(
-          testData.firstCountriesOfOrigin
-        );
-        expect(result.posterImage.url).toBe(testData.posterImageUrl);
-        expect(result.posterImage.thumbnails?.length).toBeGreaterThanOrEqual(
-          testData.posterImageThumbnailsMinLength
-        );
-        expect(result.allImages.length).toBeGreaterThanOrEqual(
-          testData.allImagesMinLength
-        );
+        }
+        if (testData.allRatesMinLength !== undefined) {
+          expect(result.allRates.length).toBeGreaterThanOrEqual(
+            testData.allRatesMinLength
+          );
+        }
+        if (testData.dates !== undefined) {
+          expect(result.dates.isEnded).toBe(testData.dates.isEnded);
+          expect(result.dates.startYear).toBe(testData.dates.startYear);
+          expect(result.dates.startDate.getFullYear()).toBe(
+            testData.dates.startYear
+          );
+          if (testData.dates.endYear) {
+            expect(result.dates.endYear).toBe(testData.dates.endYear);
+          }
+          expect(result.dates.startCountry.toLocaleLowerCase()).toBe(
+            testData.dates.startCountry
+          );
+        }
+        if (testData.allReleaseDatesMinLength !== undefined) {
+          expect(result.allReleaseDates.length).toBeGreaterThanOrEqual(
+            testData.allReleaseDatesMinLength
+          );
+        }
+
+        if (testData.ageCategory !== undefined) {
+          expect(result.ageCategoryTitle.toLowerCase()).toBe(
+            testData.ageCategory
+          );
+        }
+        if (testData.languages !== undefined) {
+          Array.from(Array(testData.languages?.length)).forEach((v, i) => {
+            expect(result.languages[i].toLocaleLowerCase()).toBe(
+              testData.languages![i]
+            );
+          });
+        }
+        if (testData.firstCountriesOfOrigin !== undefined) {
+          expect(result.countriesOfOrigin[0].toLocaleLowerCase()).toBe(
+            testData.firstCountriesOfOrigin
+          );
+        }
+        if (testData.posterImageUrl !== undefined) {
+          expect(result.posterImage.url).toBe(testData.posterImageUrl);
+        }
+        if (testData.posterImageThumbnailsMinLength !== undefined) {
+          expect(result.posterImage.thumbnails?.length).toBeGreaterThanOrEqual(
+            testData.posterImageThumbnailsMinLength
+          );
+        }
+        if (testData.allImagesMinLength !== undefined) {
+          expect(result.allImages.length).toBeGreaterThanOrEqual(
+            testData.allImagesMinLength
+          );
+        }
 
         if (testData.boxofficeBudget) {
           expect(result.boxOffice?.budget).toBe(testData.boxofficeBudget);
@@ -397,77 +461,123 @@ describe("imdb title details resolver", () => {
           expect(result.boxOffice?.opening.date.getFullYear()).toBe(
             testData.openingDateYear
           );
-          expect(result.boxOffice?.worldwide).toBeGreaterThanOrEqual(
-            testData.worldWideSellMin
+          if (testData.worldWideSellMin !== undefined) {
+            expect(result.boxOffice?.worldwide).toBeGreaterThanOrEqual(
+              testData.worldWideSellMin
+            );
+          }
+          if (testData.mainCountriesSellMin !== undefined) {
+            expect(
+              result.boxOffice?.mainCountries.amount
+            ).toBeGreaterThanOrEqual(testData.mainCountriesSellMin);
+          }
+        }
+
+        if (testData.firstProductionCompanyName !== undefined) {
+          expect(result.productionCompanies[0].name.toLowerCase()).toBe(
+            testData.firstProductionCompanyName
           );
-          expect(result.boxOffice?.mainCountries.amount).toBeGreaterThanOrEqual(
-            testData.mainCountriesSellMin
+        }
+        if (testData.productionCompaniesLength !== undefined) {
+          expect(result.productionCompanies.length).toBe(
+            testData.productionCompaniesLength
           );
         }
 
-        expect(result.productionCompanies[0].name.toLowerCase()).toBe(
-          testData.firstProductionCompanyName
-        );
-        expect(result.productionCompanies.length).toBe(
-          testData.productionCompaniesLength
-        );
-
-        expect(result.taglines.length).toBeGreaterThanOrEqual(
-          testData.taglinesMinLength
-        );
-        expect(result.taglines[0].toLocaleLowerCase()).toBe(
-          testData.firstTagline
-        );
-        expect(result.runtime.title.toLowerCase()).toBe(testData.runtimeTitle);
-        expect(result.runtime.hours).toBe(testData.runtimeHours);
-        expect(result.runtime.minutes).toBe(testData.runtimeMinutes);
-        expect(result.keywords.length).toBeGreaterThanOrEqual(
-          testData.keywordsMinLength
-        );
-        expect(
-          result.keywords
-            .map((i) => i.toLowerCase())
-            .includes(testData.onOfKeywords)
-        ).toBe(true);
+        if (testData.taglinesMinLength !== undefined) {
+          expect(result.taglines.length).toBeGreaterThanOrEqual(
+            testData.taglinesMinLength
+          );
+        }
+        if (testData.firstTagline !== undefined) {
+          expect(result.taglines[0].toLocaleLowerCase()).toBe(
+            testData.firstTagline
+          );
+        }
+        if (testData.runtimeTitle !== undefined) {
+          expect(result.runtime.title.toLowerCase()).toBe(
+            testData.runtimeTitle
+          );
+        }
+        if (testData.runtimeHours !== undefined) {
+          expect(result.runtime.hours).toBe(testData.runtimeHours);
+        }
+        if (testData.runtimeMinutes !== undefined) {
+          expect(result.runtime.minutes).toBe(testData.runtimeMinutes);
+        }
+        if (testData.keywordsMinLength !== undefined) {
+          expect(result.keywords.length).toBeGreaterThanOrEqual(
+            testData.keywordsMinLength
+          );
+        }
+        if (testData.onOfKeywords !== undefined) {
+          expect(
+            result.keywords
+              .map((i) => i.toLowerCase())
+              .includes(testData.onOfKeywords)
+          ).toBe(true);
+        }
 
         // posters & still frame images length
-        expect(
-          result.allImages.filter((i) => i.type === ImageType.Poster && !!i.url)
-            .length
-        ).toBeGreaterThanOrEqual(testData.postersMinLength);
+        if (testData.postersMinLength !== undefined) {
+          expect(
+            result.allImages.filter(
+              (i) => i.type === ImageType.Poster && !!i.url
+            ).length
+          ).toBeGreaterThanOrEqual(testData.postersMinLength);
+        }
 
-        expect(
-          result.allImages.filter(
-            (i) => i.type === ImageType.StillFrame && !!i.url
-          ).length
-        ).toBeGreaterThanOrEqual(testData.stillFrameMinLength);
+        if (testData.stillFrameMinLength !== undefined) {
+          expect(
+            result.allImages.filter(
+              (i) => i.type === ImageType.StillFrame && !!i.url
+            ).length
+          ).toBeGreaterThanOrEqual(testData.stillFrameMinLength);
+        }
 
-        expect(result.awards.length).toBeGreaterThan(testData.awardsMinLength);
-        expect(result.awardsSummary.oscarWins).toBe(testData.oscars);
-        expect(result.awardsSummary.emmyWins).toBe(testData.emmys);
-        expect(result.awardsSummary.totalNominations).toBeGreaterThan(
-          testData.minNominations
-        );
-        expect(result.quotes.length).toBeGreaterThanOrEqual(
-          testData.quotesLength
-        );
-        expect(
-          result.quotes.filter((i) => i.isSpoiler).length
-        ).toBeGreaterThanOrEqual(testData.spoilerQuotes);
-        result.quotes.forEach((i) => {
-          expect(i.lines.length).toBeGreaterThan(0);
-          i.lines.forEach((l) => {
-            expect(l.line.length > 0);
+        if (testData.awardsMinLength !== undefined) {
+          expect(result.awards.length).toBeGreaterThan(
+            testData.awardsMinLength
+          );
+        }
+        if (testData.oscars !== undefined) {
+          expect(result.awardsSummary.oscarWins).toBe(testData.oscars);
+        }
+        if (testData.emmys !== undefined) {
+          expect(result.awardsSummary.emmyWins).toBe(testData.emmys);
+        }
+        if (testData.minNominations !== undefined) {
+          expect(result.awardsSummary.totalNominations).toBeGreaterThan(
+            testData.minNominations
+          );
+        }
+        if (testData.quotesLength !== undefined) {
+          expect(result.quotes.length).toBeGreaterThanOrEqual(
+            testData.quotesLength
+          );
+        }
+        if (testData.spoilerQuotes !== undefined) {
+          expect(
+            result.quotes.filter((i) => i.isSpoiler).length
+          ).toBeGreaterThanOrEqual(testData.spoilerQuotes);
+
+          result.quotes.forEach((i) => {
+            expect(i.lines.length).toBeGreaterThan(0);
+            i.lines.forEach((l) => {
+              expect(l.line.length > 0);
+            });
           });
-        });
-        expect(result.goofs.length).toBeGreaterThanOrEqual(
-          testData.goofsLength
-        );
+        }
+        if (testData.goofsLength !== undefined) {
+          expect(result.goofs.length).toBeGreaterThanOrEqual(
+            testData.goofsLength
+          );
 
-        result.goofs.forEach((i) => {
-          expect(i.details.length).toBeGreaterThan(0);
-          expect(i.groupName.length).toBeGreaterThan(0);
-        });
+          result.goofs.forEach((i) => {
+            expect(i.details.length).toBeGreaterThan(0);
+            expect(i.groupName.length).toBeGreaterThan(0);
+          });
+        }
       },
       200 * 1000
     );
