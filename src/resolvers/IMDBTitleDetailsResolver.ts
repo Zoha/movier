@@ -1,5 +1,7 @@
 import {
+  ITitleDetailsResolverOptions,
   ITitleGoofItem,
+  ITitleKey,
   ITitleQuoteItem,
   ITitleQuoteLineItemDetails,
 } from "./../interfaces";
@@ -42,97 +44,269 @@ import { IMDBNextData } from "../externalInterfaces/IMDBNextDataInterface";
 import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
 import { getRequest } from "../requestClient";
 
+type HttpRequestKey =
+  | "mainPage"
+  | "releaseInfo"
+  | "fullCredits"
+  | "ratings"
+  | "companyCredits"
+  | "taglines"
+  | "posterImages"
+  | "stillFrameImages"
+  | "awards"
+  | "quotes"
+  | "goofs"
+  | "criticReviews";
+
+export const titleKeys = new Set<ITitleKey>([
+  "detailsLang",
+  "mainSource",
+  "allSources",
+  "name",
+  "worldWideName",
+  "otherNames",
+  "titleYear",
+  "genres",
+  "directors",
+  "writers",
+  "mainType",
+  "plot",
+  "casts",
+  "producers",
+  "mainRate",
+  "allRates",
+  "dates",
+  "allReleaseDates",
+  "ageCategoryTitle",
+  "languages",
+  "countriesOfOrigin",
+  "posterImage",
+  "allImages",
+  "boxOffice",
+  "productionCompanies",
+  "taglines",
+  "runtime",
+  "keywords",
+  "awards",
+  "awardsSummary",
+  "quotes",
+  "goofs",
+]);
+
 export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private url: string;
   private resolverCacheManager = new ResolverCacheManager();
-  private mainPageHTMLData!: string;
-  private releaseInfoPageHTMLData!: string;
-  private fullCreditsPageHTMLData!: string;
-  private ratingsPageHTMLData!: string;
-  private companyCreditPageHTMLData!: string;
-  private taglinesPageHTMLData!: string;
-  private posterImagesFirstPageHTMLData!: string;
-  private stillFrameImagesFirstPageHTMLData!: string;
-  private awardsPageHTMLData!: string;
-  private quotesPageHTMLData!: string;
-  private goofsPageHTMLData!: string;
-  private criticReviewsPageHTMLData!: string;
+  public httpRequests = new Set<HttpRequestKey>();
+
+  private _mainPageHTMLData: string = "";
+  private _releaseInfoPageHTMLData: string = "";
+  private _fullCreditsPageHTMLData: string = "";
+  private _ratingsPageHTMLData: string = "";
+  private _companyCreditsPageHTMLData: string = "";
+  private _taglinesPageHTMLData: string = "";
+  private _posterImagesFirstPageHTMLData: string = "";
+  private _stillFrameImagesFirstPageHTMLData: string = "";
+  private _awardsPageHTMLData: string = "";
+  private _quotesPageHTMLData: string = "";
+  private _goofsPageHTMLData: string = "";
+  private _criticReviewsPageHTMLData: string = "";
 
   // cheerio loaded instances
-  private mainPageCheerio!: CheerioAPI;
-  private releaseInfoPageCheerio!: CheerioAPI;
-  private fullCreditsPageCheerio!: CheerioAPI;
-  private ratingsPageCheerio!: CheerioAPI;
-  private companyCreditPageCheerio!: CheerioAPI;
-  private taglinesPageCheerio!: CheerioAPI;
-  private posterImagesFirstPageCheerio!: CheerioAPI;
-  private stillFrameImagesFirstPageCheerio!: CheerioAPI;
-  private awardsPageCheerio!: CheerioAPI;
-  private quotesPageCheerio!: CheerioAPI;
-  private goofsPageCheerio!: CheerioAPI;
-  private criticReviewsPageCheerio!: CheerioAPI;
+  private _mainPageCheerio: CheerioAPI = loadCheerio("");
+  private _releaseInfoPageCheerio: CheerioAPI = loadCheerio("");
+  private _fullCreditsPageCheerio: CheerioAPI = loadCheerio("");
+  private _ratingsPageCheerio: CheerioAPI = loadCheerio("");
+  private _companyCreditsPageCheerio: CheerioAPI = loadCheerio("");
+  private _taglinesPageCheerio: CheerioAPI = loadCheerio("");
+  private _posterImagesFirstPageCheerio: CheerioAPI = loadCheerio("");
+  private _stillFrameImagesFirstPageCheerio: CheerioAPI = loadCheerio("");
+  private _awardsPageCheerio: CheerioAPI = loadCheerio("");
+  private _quotesPageCheerio: CheerioAPI = loadCheerio("");
+  private _goofsPageCheerio: CheerioAPI = loadCheerio("");
+  private _criticReviewsPageCheerio: CheerioAPI = loadCheerio("");
 
-  private mainPageNextData!: IMDBNextData;
+  private _mainPageNextData: IMDBNextData = {};
+
+  private get mainPageNextData(): IMDBNextData {
+    this.httpRequests.add("mainPage");
+    return this._mainPageNextData;
+  }
+
+  private get mainPageHTMLData(): string {
+    this.httpRequests.add("mainPage");
+    return this._mainPageHTMLData;
+  }
+  private get releaseInfoPageHTMLData(): string {
+    this.httpRequests.add("releaseInfo");
+    return this._releaseInfoPageHTMLData;
+  }
+  private get fullCreditsPageHTMLData(): string {
+    this.httpRequests.add("fullCredits");
+    return this._fullCreditsPageHTMLData;
+  }
+  private get ratingsPageHTMLData(): string {
+    this.httpRequests.add("ratings");
+    return this._ratingsPageHTMLData;
+  }
+  private get companyCreditsPageHTMLData(): string {
+    this.httpRequests.add("companyCredits");
+    return this._companyCreditsPageHTMLData;
+  }
+  private get taglinesPageHTMLData(): string {
+    this.httpRequests.add("taglines");
+    return this._taglinesPageHTMLData;
+  }
+  private get posterImagesFirstPageHTMLData(): string {
+    this.httpRequests.add("posterImages");
+    return this._posterImagesFirstPageHTMLData;
+  }
+  private get stillFrameImagesFirstPageHTMLData(): string {
+    this.httpRequests.add("stillFrameImages");
+    return this._stillFrameImagesFirstPageHTMLData;
+  }
+  private get awardsPageHTMLData(): string {
+    this.httpRequests.add("awards");
+    return this._awardsPageHTMLData;
+  }
+  private get quotesPageHTMLData(): string {
+    this.httpRequests.add("quotes");
+    return this._quotesPageHTMLData;
+  }
+  private get goofsPageHTMLData(): string {
+    this.httpRequests.add("goofs");
+    return this._goofsPageHTMLData;
+  }
+  private get criticReviewsPageHTMLData(): string {
+    this.httpRequests.add("criticReviews");
+    return this._criticReviewsPageHTMLData;
+  }
+
+  private get mainPageCheerio(): CheerioAPI {
+    this.httpRequests.add("mainPage");
+    return this._mainPageCheerio;
+  }
+  private get releaseInfoPageCheerio(): CheerioAPI {
+    this.httpRequests.add("releaseInfo");
+    return this._releaseInfoPageCheerio;
+  }
+  private get fullCreditsPageCheerio(): CheerioAPI {
+    this.httpRequests.add("fullCredits");
+    return this._fullCreditsPageCheerio;
+  }
+  private get ratingsPageCheerio(): CheerioAPI {
+    this.httpRequests.add("ratings");
+    return this._ratingsPageCheerio;
+  }
+  private get companyCreditsPageCheerio(): CheerioAPI {
+    this.httpRequests.add("companyCredits");
+    return this._companyCreditsPageCheerio;
+  }
+  private get taglinesPageCheerio(): CheerioAPI {
+    this.httpRequests.add("taglines");
+    return this._taglinesPageCheerio;
+  }
+  private get posterImagesFirstPageCheerio(): CheerioAPI {
+    this.httpRequests.add("posterImages");
+    return this._posterImagesFirstPageCheerio;
+  }
+  private get stillFrameImagesFirstPageCheerio(): CheerioAPI {
+    this.httpRequests.add("stillFrameImages");
+    return this._stillFrameImagesFirstPageCheerio;
+  }
+  private get awardsPageCheerio(): CheerioAPI {
+    this.httpRequests.add("awards");
+    return this._awardsPageCheerio;
+  }
+  private get quotesPageCheerio(): CheerioAPI {
+    this.httpRequests.add("quotes");
+    return this._quotesPageCheerio;
+  }
+  private get goofsPageCheerio(): CheerioAPI {
+    this.httpRequests.add("goofs");
+    return this._goofsPageCheerio;
+  }
+  private get criticReviewsPageCheerio(): CheerioAPI {
+    this.httpRequests.add("criticReviews");
+    return this._criticReviewsPageCheerio;
+  }
 
   constructor(url: string) {
     this.url = url;
   }
 
-  async getDetails(): Promise<ITitle> {
-    await Promise.all([
-      this.getMainPageHTMLData(),
-      this.getReleaseInfoPageHTMLData(),
-      this.getFullCreditsPageHTMLData(),
-      this.getRatingsPageHTMLData(),
-      this.getCompanyCreditsPageHTMLData(),
-      this.getTaglinesPageHTMLData(),
-      this.getPosterImagesFirstPageHTMLData(),
-      this.getStillFrameImagesFirstPageHTMLData(),
-      this.getAwardsPageHTMLData(),
-      this.getCriticReviewsHTMLData(),
-      this.getQuotesPageHTMLData(),
-      this.getGoofsPageHTMLData(),
-    ]);
+  async getDetails(opts?: ITitleDetailsResolverOptions): Promise<ITitle> {
+    // Access all fields to return, which will populate `this.httpRequests`
+    // with the minimum number of required HTTP requests. This is essentially
+    // a no-op in order to tell based on data-access which HTTP requests are
+    // required depending on the selections in `opts`.
+    this.resolverCacheManager = new ResolverCacheManager();
+    const emptyDetailsData = await this.generateReturnDetailsData(opts);
+    this.resolverCacheManager = new ResolverCacheManager();
 
-    return this.generateReturnDetailsData();
+    // load any required HTTP requests
+    await Promise.all(
+      [
+        this.httpRequests.has("mainPage") && this.getMainPageHTMLData(),
+        this.httpRequests.has("releaseInfo") &&
+          this.getReleaseInfoPageHTMLData(),
+        this.httpRequests.has("fullCredits") &&
+          this.getFullCreditsPageHTMLData(),
+        this.httpRequests.has("ratings") && this.getRatingsPageHTMLData(),
+        this.httpRequests.has("companyCredits") &&
+          this.getCompanyCreditsPageHTMLData(),
+        this.httpRequests.has("taglines") && this.getTaglinesPageHTMLData(),
+        this.httpRequests.has("posterImages") &&
+          this.getPosterImagesFirstPageHTMLData(),
+        this.httpRequests.has("stillFrameImages") &&
+          this.getStillFrameImagesFirstPageHTMLData(),
+        this.httpRequests.has("awards") && this.getAwardsPageHTMLData(),
+        this.httpRequests.has("criticReviews") &&
+          this.getCriticReviewsHTMLData(),
+        this.httpRequests.has("quotes") && this.getQuotesPageHTMLData(),
+        this.httpRequests.has("goofs") && this.getGoofsPageHTMLData(),
+      ].filter(Boolean)
+    );
+
+    // Return the actual resolved data
+    return this.generateReturnDetailsData(opts);
   }
 
   async getMainPageHTMLData() {
     const apiResult = await getRequest(this.url);
-    this.mainPageHTMLData = apiResult.data;
-    this.mainPageCheerio = loadCheerio(this.mainPageHTMLData);
+    this._mainPageHTMLData = apiResult.data;
+    this._mainPageCheerio = loadCheerio(this.mainPageHTMLData);
     const nextDataString =
       this.mainPageCheerio("#__NEXT_DATA__")?.html()?.trim() || "{}";
 
-    this.mainPageNextData = JSON.parse(nextDataString);
+    this._mainPageNextData = JSON.parse(nextDataString);
   }
 
   async getReleaseInfoPageHTMLData() {
     const releaseInfoPageUrl = this.addToPathOfUrl(this.url, "/releaseinfo");
     const apiResult = await getRequest(releaseInfoPageUrl);
-    this.releaseInfoPageHTMLData = apiResult.data;
-    this.releaseInfoPageCheerio = loadCheerio(this.releaseInfoPageHTMLData);
+    this._releaseInfoPageHTMLData = apiResult.data;
+    this._releaseInfoPageCheerio = loadCheerio(this.releaseInfoPageHTMLData);
   }
 
   async getFullCreditsPageHTMLData() {
     const fullCreditsPageUrl = this.addToPathOfUrl(this.url, "/fullcredits");
     const apiResult = await getRequest(fullCreditsPageUrl);
-    this.fullCreditsPageHTMLData = apiResult.data;
-    this.fullCreditsPageCheerio = loadCheerio(this.fullCreditsPageHTMLData);
+    this._fullCreditsPageHTMLData = apiResult.data;
+    this._fullCreditsPageCheerio = loadCheerio(this.fullCreditsPageHTMLData);
   }
 
   async getRatingsPageHTMLData() {
     const ratingsPageUrl = this.addToPathOfUrl(this.url, "/ratings");
     const apiResult = await getRequest(ratingsPageUrl);
-    this.ratingsPageHTMLData = apiResult.data;
-    this.ratingsPageCheerio = loadCheerio(this.ratingsPageHTMLData);
+    this._ratingsPageHTMLData = apiResult.data;
+    this._ratingsPageCheerio = loadCheerio(this.ratingsPageHTMLData);
   }
 
   async getTaglinesPageHTMLData() {
     const taglinesPageUrl = this.addToPathOfUrl(this.url, "/taglines");
     const apiResult = await getRequest(taglinesPageUrl);
-    this.taglinesPageHTMLData = apiResult.data;
-    this.taglinesPageCheerio = loadCheerio(this.taglinesPageHTMLData);
+    this._taglinesPageHTMLData = apiResult.data;
+    this._taglinesPageCheerio = loadCheerio(this.taglinesPageHTMLData);
   }
 
   async getCriticReviewsHTMLData() {
@@ -141,18 +315,22 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       "/criticreviews"
     );
     const apiResult = await getRequest(criticReviewsPageUrl);
-    this.criticReviewsPageHTMLData = apiResult.data;
-    this.criticReviewsPageCheerio = loadCheerio(this.criticReviewsPageHTMLData);
+    this._criticReviewsPageHTMLData = apiResult.data;
+    this._criticReviewsPageCheerio = loadCheerio(
+      this.criticReviewsPageHTMLData
+    );
   }
 
   async getCompanyCreditsPageHTMLData() {
-    const companyCreditPageUrl = this.addToPathOfUrl(
+    const companyCreditsPageUrl = this.addToPathOfUrl(
       this.url,
       "/companycredits"
     );
-    const apiResult = await getRequest(companyCreditPageUrl);
-    this.companyCreditPageHTMLData = apiResult.data;
-    this.companyCreditPageCheerio = loadCheerio(this.companyCreditPageHTMLData);
+    const apiResult = await getRequest(companyCreditsPageUrl);
+    this._companyCreditsPageHTMLData = apiResult.data;
+    this._companyCreditsPageCheerio = loadCheerio(
+      this.companyCreditsPageHTMLData
+    );
   }
 
   async getPosterImagesFirstPageHTMLData() {
@@ -164,8 +342,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       }
     );
     const apiResult = await getRequest(posterImagesFirstPageUrl);
-    this.posterImagesFirstPageHTMLData = apiResult.data;
-    this.posterImagesFirstPageCheerio = loadCheerio(
+    this._posterImagesFirstPageHTMLData = apiResult.data;
+    this._posterImagesFirstPageCheerio = loadCheerio(
       this.posterImagesFirstPageHTMLData
     );
   }
@@ -179,8 +357,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       }
     );
     const apiResult = await getRequest(stillFrameImagesFirstPageUrl);
-    this.stillFrameImagesFirstPageHTMLData = apiResult.data;
-    this.stillFrameImagesFirstPageCheerio = loadCheerio(
+    this._stillFrameImagesFirstPageHTMLData = apiResult.data;
+    this._stillFrameImagesFirstPageCheerio = loadCheerio(
       this.stillFrameImagesFirstPageHTMLData
     );
   }
@@ -188,22 +366,22 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   async getAwardsPageHTMLData() {
     const awardsPageUrl = this.addToPathOfUrl(this.url, "/awards");
     const apiResult = await getRequest(awardsPageUrl);
-    this.awardsPageHTMLData = apiResult.data;
-    this.awardsPageCheerio = loadCheerio(this.awardsPageHTMLData);
+    this._awardsPageHTMLData = apiResult.data;
+    this._awardsPageCheerio = loadCheerio(this.awardsPageHTMLData);
   }
 
   async getQuotesPageHTMLData() {
     const quotesPageUrl = this.addToPathOfUrl(this.url, "/quotes");
     const apiResult = await getRequest(quotesPageUrl);
-    this.quotesPageHTMLData = apiResult.data;
-    this.quotesPageCheerio = loadCheerio(this.quotesPageHTMLData);
+    this._quotesPageHTMLData = apiResult.data;
+    this._quotesPageCheerio = loadCheerio(this.quotesPageHTMLData);
   }
 
   async getGoofsPageHTMLData() {
     const goofsPageUrl = this.addToPathOfUrl(this.url, "/goofs");
     const apiResult = await getRequest(goofsPageUrl);
-    this.goofsPageHTMLData = apiResult.data;
-    this.goofsPageCheerio = loadCheerio(this.goofsPageHTMLData);
+    this._goofsPageHTMLData = apiResult.data;
+    this._goofsPageCheerio = loadCheerio(this.goofsPageHTMLData);
   }
 
   addToPathOfUrl(
@@ -219,48 +397,91 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return urlInstance.href;
   }
 
-  async generateReturnDetailsData() {
-    const res: ITitle = {
-      detailsLang: Language.English,
-      mainSource: this.mainSourceDetails,
-      allSources: this.allSources,
-      name: this.name,
-      worldWideName: this.worldWideName,
-      otherNames: this.allUniqueNames,
-      titleYear: this.titleYear,
-      genres: this.genres,
-      directors: this.directors,
-      writers: this.writers,
-      mainType: this.mainType,
-      plot: this.plot,
-      casts: this.casts,
-      producers: this.producers,
-      mainRate: this.mainRate,
-      allRates: this.allRates,
-      allReleaseDates: this.allReleaseDates,
-      dates: this.dates,
-      ageCategoryTitle: this.ageCategoryTitle,
-      languages: this.languages,
-      countriesOfOrigin: this.countriesOfOrigin,
-      posterImage: this.posterImage,
-      allImages: this.allImages,
-      boxOffice: this.boxOffice,
-      productionCompanies: this.productionCompanies,
-      taglines: this.taglines,
-      runtime: this.runtime,
-      keywords: this.keywords,
-      awards: this.awards,
-      awardsSummary: this.awardsSummary,
-      quotes: this.quotes,
-      goofs: this.goofs,
+  async generateReturnDetailsData(
+    opts?: ITitleDetailsResolverOptions
+  ): Promise<ITitle> {
+    const titleKeySelections = new Set<ITitleKey>();
+
+    titleKeys.forEach((titleKey) => {
+      if (!opts?.select || opts.select[titleKey as ITitleKey]) {
+        titleKeySelections.add(titleKey);
+      }
+    });
+
+    const res: Partial<ITitle> = {
+      detailsLang: titleKeySelections.has("detailsLang")
+        ? Language.English
+        : undefined,
+      mainSource: titleKeySelections.has("mainSource")
+        ? this.mainSource
+        : undefined,
+      allSources: titleKeySelections.has("allSources")
+        ? this.allSources
+        : undefined,
+      name: titleKeySelections.has("name") ? this.name : undefined,
+      worldWideName: titleKeySelections.has("worldWideName")
+        ? this.worldWideName
+        : undefined,
+      otherNames: titleKeySelections.has("otherNames")
+        ? this.otherNames
+        : undefined,
+      titleYear: titleKeySelections.has("titleYear")
+        ? this.titleYear
+        : undefined,
+      genres: titleKeySelections.has("genres") ? this.genres : undefined,
+      directors: titleKeySelections.has("directors")
+        ? this.directors
+        : undefined,
+      writers: titleKeySelections.has("writers") ? this.writers : undefined,
+      mainType: titleKeySelections.has("mainType") ? this.mainType : undefined,
+      plot: titleKeySelections.has("plot") ? this.plot : undefined,
+      casts: titleKeySelections.has("casts") ? this.casts : undefined,
+      producers: titleKeySelections.has("producers")
+        ? this.producers
+        : undefined,
+      mainRate: titleKeySelections.has("mainRate") ? this.mainRate : undefined,
+      allRates: titleKeySelections.has("allRates") ? this.allRates : undefined,
+      allReleaseDates: titleKeySelections.has("allReleaseDates")
+        ? this.allReleaseDates
+        : undefined,
+      dates: titleKeySelections.has("dates") ? this.dates : undefined,
+      ageCategoryTitle: titleKeySelections.has("ageCategoryTitle")
+        ? this.ageCategoryTitle
+        : undefined,
+      languages: titleKeySelections.has("languages")
+        ? this.languages
+        : undefined,
+      countriesOfOrigin: titleKeySelections.has("countriesOfOrigin")
+        ? this.countriesOfOrigin
+        : undefined,
+      posterImage: titleKeySelections.has("posterImage")
+        ? this.posterImage
+        : undefined,
+      allImages: titleKeySelections.has("allImages")
+        ? this.allImages
+        : undefined,
+      boxOffice: titleKeySelections.has("boxOffice")
+        ? this.boxOffice
+        : undefined,
+      productionCompanies: titleKeySelections.has("productionCompanies")
+        ? this.productionCompanies
+        : undefined,
+      taglines: titleKeySelections.has("taglines") ? this.taglines : undefined,
+      runtime: titleKeySelections.has("runtime") ? this.runtime : undefined,
+      keywords: titleKeySelections.has("keywords") ? this.keywords : undefined,
+      awards: titleKeySelections.has("awards") ? this.awards : undefined,
+      awardsSummary: titleKeySelections.has("awardsSummary")
+        ? this.awardsSummary
+        : undefined,
+      quotes: titleKeySelections.has("quotes") ? this.quotes : undefined,
+      goofs: titleKeySelections.has("goofs") ? this.goofs : undefined,
     };
 
-    return res;
+    return res as ITitle;
   }
 
-  get mainSourceDetails(): ISourceDetails {
-    const cacheDataManager =
-      this.resolverCacheManager.load("mainSourceDetails");
+  get mainSource(): ISourceDetails {
+    const cacheDataManager = this.resolverCacheManager.load("mainSource");
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as ISourceDetails;
     }
@@ -276,7 +497,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as ISourceDetails[];
     }
-    return cacheDataManager.cacheAndReturnData([this.mainSourceDetails]);
+    return cacheDataManager.cacheAndReturnData([this.mainSource]);
   }
 
   get sourceId(): string {
@@ -322,8 +543,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     return cacheDataManager.cacheAndReturnData(allNames);
   }
 
-  get allUniqueNames(): string[] {
-    const cacheDataManager = this.resolverCacheManager.load("allUniqueNames");
+  get otherNames(): string[] {
+    const cacheDataManager = this.resolverCacheManager.load("otherNames");
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as string[];
     }
@@ -1020,7 +1241,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as IProductionCompanyDetails[];
     }
-    const $ = this.companyCreditPageCheerio;
+    const $ = this.companyCreditsPageCheerio;
     const productionCompanies: IProductionCompanyDetails[] = [];
     $("#production")
       .next("ul")
