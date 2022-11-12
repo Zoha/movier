@@ -977,66 +977,40 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     if (this.mainType !== TitleMainType.Movie) {
       return undefined;
     }
-    const $ = this.mainPageCheerio;
-    const budgetRawText = $("[data-testid='title-boxoffice-budget'] li span")
-      .first()
-      .text();
-    const [, budgetWithCommas] =
-      /\$([\d,]+)\s\(estimated\)/.exec(
-        formatHTMLText(budgetRawText, { toLowerCase: true })
-      ) || [];
-    const budget = this.convertDividedHTMLTextToNumber(budgetWithCommas);
-    const sellInMainCountriesElText = $(
-      "[data-testid='title-boxoffice-grossdomestic']"
-    )
-      .first()
-      .text()
-      .replace?.(/\n/g, "");
-    const [, countriesString, sellInMainCountriesWithCommas] =
-      /gross ([^$]+)\$([\d,]+)$/i.exec(sellInMainCountriesElText) || [];
-    const countries = ((countriesString || "") as string)
-      .split("&")
-      .map((i) => i.trim().toLowerCase());
-    const sellInMainCountries = this.convertDividedHTMLTextToNumber(
-      sellInMainCountriesWithCommas
-    );
-    const openingSellText = $(
-      "[data-testid='title-boxoffice-openingweekenddomestic'] li"
-    )
-      .text()
-      .replace(/\n/g, "");
+    const colData = this.mainPageNextData.props?.pageProps?.mainColumnData;
+    const budget = colData?.productionBudget?.budget?.amount ?? 0;
+    const worldWide = colData?.worldwideGross?.total?.amount ?? 0;
+    const mainCountriesOpening = colData?.lifetimeGross?.total?.amount ?? 0;
 
-    const [, openingSellWithCommas, openingDateString] =
-      /\$([\d,]+).*(\w{3}\s\d{1,2},\s\d{4})/i.exec(openingSellText) || [];
-    const openingSell = this.convertDividedHTMLTextToNumber(
-      openingSellWithCommas
-    );
-    const openingDate = dayjs(openingDateString, "MMM dd, YYYY")
+    const openingDate = dayjs(
+      colData?.openingWeekendGross?.weekendEndDate,
+      "YYYY-mm-DD"
+    )
       .startOf("day")
       .toDate();
-    const worldWideElText = $(
-      "[data-testid='title-boxoffice-cumulativeworldwidegross'] li span"
-    )
-      .first()
-      .text();
-    const [, worldWideSellWithCommas] =
-      /\$([\d,]+)/.exec(worldWideElText) || [];
-    const worldWideSell = this.convertDividedHTMLTextToNumber(
-      worldWideSellWithCommas
-    );
+    const mainCountries =
+      this.mainPageNextData.props?.pageProps?.translationContext?.i18n?.translations?.default?.resources?.title_main_boxoffice_openingweekenddomestic
+        ?.slice(16)
+        .split("&")
+        .map((i) => i.trim()) ?? "";
+    const openingCountries =
+      this.mainPageNextData.props?.pageProps?.translationContext?.i18n?.translations?.default?.resources?.title_main_boxoffice_grossdomestic
+        ?.slice(6)
+        .split("&")
+        .map((i) => i.trim()) ?? "";
     return cacheDataManager.cacheAndReturnData({
       budget,
-      worldwide: worldWideSell,
+      worldwide: worldWide,
       mainCountries: {
-        countries: countries,
-        amount: sellInMainCountries,
+        countries: mainCountries,
+        amount: mainCountriesOpening,
       },
       opening: {
-        countries: countries,
-        amount: openingSell,
+        countries: openingCountries,
+        amount: colData?.openingWeekendGross?.gross?.total?.amount ?? 0,
         date: openingDate,
       },
-    });
+    } as IBoxOfficeDetails);
   }
 
   get productionCompanies(): IProductionCompanyDetails[] {
