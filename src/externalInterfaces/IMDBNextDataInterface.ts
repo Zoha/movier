@@ -1285,7 +1285,7 @@ interface IMDBADSWEBMEDIAINTEROP395798_Class {
 }
 
 interface TranslationContext {
-  i18N?: I18N;
+  i18n?: I18N;
 }
 
 interface I18N {
