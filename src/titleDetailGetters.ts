@@ -52,7 +52,7 @@ export async function getTitleDetailsByName(
   });
   if (!allResults.length) {
     throw new Error(
-      "there wasn't any matched title with the given name : `titleName`"
+      `there wasn't any matched title with the given name : '${titleName}'`
     );
   }
   return getTitleDetailsByFoundedTitleDetails(allResults[0]);
