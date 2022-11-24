@@ -240,7 +240,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
     // a no-op in order to tell based on data-access which HTTP requests are
     // required depending on the selections in `opts`.
     this.resolverCacheManager = new ResolverCacheManager();
-    const _emptyDetailsData = await this.generateReturnDetailsData(opts);
+    await this.generateReturnDetailsData(opts);
     this.resolverCacheManager = new ResolverCacheManager();
 
     // load any required HTTP requests
