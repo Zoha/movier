@@ -1,6 +1,9 @@
-import { IPersonDetails } from "../interfaces";
+import { IPersonDetails, ITitleKey } from "../interfaces";
 import { Genre, ImageType, Language, Source, TitleMainType } from "../enums";
-import { IMDBTitleDetailsResolver } from "./IMDBTitleDetailsResolver";
+import {
+  IMDBTitleDetailsResolver,
+  titleKeys,
+} from "./IMDBTitleDetailsResolver";
 
 export interface ITitleTestData {
   url: string;
@@ -578,8 +581,55 @@ describe("imdb title details resolver", () => {
             expect(i.groupName.length).toBeGreaterThan(0);
           });
         }
+
+        // ensure that for the default options where we select all fields, all
+        // 12 HTTP requests are made
+        expect(resolver.httpRequests.size).toBe(12);
       },
       200 * 1000
     );
+  });
+
+  titlesToTest.forEach((testData) => {
+    test(`check ${testData.name} ${testData.titleYear} empty selection`, async () => {
+      const resolver = new IMDBTitleDetailsResolver(testData.url);
+      const result = await resolver.getDetails({ select: {} });
+      expect(result).not.toBe(undefined);
+
+      // ensure that no HTTP requests were called for an empty selection
+      expect(resolver.httpRequests.size).toBe(0);
+
+      // ensure that all fields are undefined for an empty selection
+      for (const titleKey of titleKeys) {
+        expect(result[titleKey]).toBe(undefined);
+      }
+    });
+  });
+
+  titlesToTest.forEach((testData) => {
+    test(`check ${testData.name} ${testData.titleYear} partial selection`, async () => {
+      const select: Partial<Record<ITitleKey, boolean>> = {
+        name: true,
+        genres: true,
+        plot: true,
+        dates: true,
+        mainRate: true,
+      };
+
+      const resolver = new IMDBTitleDetailsResolver(testData.url);
+      const result = await resolver.getDetails({ select });
+      expect(result).not.toBe(undefined);
+
+      // ensure that only the correct HTTP requests have been made made
+      expect(resolver.httpRequests.size).toBe(3);
+      expect(resolver.httpRequests.has("mainPage")).toBe(true);
+      expect(resolver.httpRequests.has("releaseInfo")).toBe(true);
+      expect(resolver.httpRequests.has("ratings")).toBe(true);
+
+      // ensure that all selected keys are valid
+      for (const titleKey of Object.keys(select)) {
+        expect((result as any)[titleKey]).not.toBe(undefined);
+      }
+    });
   });
 });
