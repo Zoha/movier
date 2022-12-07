@@ -42,6 +42,14 @@ export interface ITitle {
   goofs: ITitleGoofItem[];
 }
 
+export type ITitleKey = keyof ITitle;
+
+export interface ITitleDetailsResolverOptions {
+  select?: Partial<{
+    [key in ITitleKey]: boolean;
+  }>;
+}
+
 export interface ITitleLocale {
   detailsLang: Language;
   mainSource: ISourceDetails;
@@ -205,7 +213,7 @@ export interface IAwardsSummaryDetails {
 }
 
 export interface ITitleDetailsResolver {
-  getDetails(): Promise<ITitle | undefined>;
+  getDetails(opts?: ITitleDetailsResolverOptions): Promise<ITitle | undefined>;
 }
 
 export interface ITitleSearchResolver {

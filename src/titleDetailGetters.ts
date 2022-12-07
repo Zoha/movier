@@ -2,6 +2,7 @@ import {
   IFoundedTitleDetails,
   ITitle,
   ITitleDetailsResolver,
+  ITitleDetailsResolverOptions,
 } from "./interfaces";
 import { Source } from "./enums";
 import { IMDBTitleDetailsResolver } from "./resolvers/IMDBTitleDetailsResolver";
@@ -9,7 +10,10 @@ import { guessSourceTypeByUrl } from "./utils/guessSourceTypeByUrl";
 import { searchTitleByName, SearchTitleByNameOptions } from "./titleSearcher";
 import { convertIMDBTitleIdToUrl } from "./utils/convertIMDBTitleIdToUrl";
 
-export async function getTitleDetailsByUrl(titleUrl: string): Promise<ITitle> {
+export async function getTitleDetailsByUrl(
+  titleUrl: string,
+  opts?: ITitleDetailsResolverOptions
+): Promise<ITitle> {
   const sourceType = guessSourceTypeByUrl(titleUrl);
   //  select the resolver
   let resolver: ITitleDetailsResolver;
@@ -22,7 +26,7 @@ export async function getTitleDetailsByUrl(titleUrl: string): Promise<ITitle> {
   // get details from resolver
   let result;
   try {
-    result = await resolver.getDetails();
+    result = await resolver.getDetails(opts);
   } catch (e) {
     throw new Error(
       "failed to get the result from IMDB : " + (e as Error).message
@@ -37,14 +41,16 @@ export async function getTitleDetailsByUrl(titleUrl: string): Promise<ITitle> {
 }
 
 export async function getTitleDetailsByFoundedTitleDetails(
-  foundedTitleDetails: IFoundedTitleDetails
+  foundedTitleDetails: IFoundedTitleDetails,
+  opts?: ITitleDetailsResolverOptions
 ): Promise<ITitle> {
-  return getTitleDetailsByUrl(foundedTitleDetails.url);
+  return getTitleDetailsByUrl(foundedTitleDetails.url, opts);
 }
 
 export async function getTitleDetailsByName(
   titleName: string,
-  { exactMatch = false, specificType }: SearchTitleByNameOptions = {}
+  { exactMatch = false, specificType }: SearchTitleByNameOptions = {},
+  opts?: ITitleDetailsResolverOptions
 ): Promise<ITitle> {
   const allResults = await searchTitleByName(titleName, {
     exactMatch,
@@ -55,11 +61,12 @@ export async function getTitleDetailsByName(
       `there wasn't any matched title with the given name : '${titleName}'`
     );
   }
-  return getTitleDetailsByFoundedTitleDetails(allResults[0]);
+  return getTitleDetailsByFoundedTitleDetails(allResults[0], opts);
 }
 
 export async function getTitleDetailsByIMDBId(
-  titleId: string
+  titleId: string,
+  opts?: ITitleDetailsResolverOptions
 ): Promise<ITitle> {
-  return getTitleDetailsByUrl(convertIMDBTitleIdToUrl(titleId));
+  return getTitleDetailsByUrl(convertIMDBTitleIdToUrl(titleId), opts);
 }
