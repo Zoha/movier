@@ -40,7 +40,7 @@ import { formatHTMLText } from "../utils/formatHTMLText";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import dayjs from "dayjs";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
-import { IMDBNextData } from "../externalInterfaces/IMDBNextDataInterface";
+import { IMDBNextData } from "../externalInterfaces/IMDBTitleNextDataInterface";
 import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
 import { getRequest } from "../requestClient";
 
@@ -98,18 +98,18 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   private resolverCacheManager = new ResolverCacheManager();
   public httpRequests = new Set<HttpRequestKey>();
 
-  private _mainPageHTMLData: string = "";
-  private _releaseInfoPageHTMLData: string = "";
-  private _fullCreditsPageHTMLData: string = "";
-  private _ratingsPageHTMLData: string = "";
-  private _companyCreditsPageHTMLData: string = "";
-  private _taglinesPageHTMLData: string = "";
-  private _posterImagesFirstPageHTMLData: string = "";
-  private _stillFrameImagesFirstPageHTMLData: string = "";
-  private _awardsPageHTMLData: string = "";
-  private _quotesPageHTMLData: string = "";
-  private _goofsPageHTMLData: string = "";
-  private _criticReviewsPageHTMLData: string = "";
+  private _mainPageHTMLData = "";
+  private _releaseInfoPageHTMLData = "";
+  private _fullCreditsPageHTMLData = "";
+  private _ratingsPageHTMLData = "";
+  private _companyCreditsPageHTMLData = "";
+  private _taglinesPageHTMLData = "";
+  private _posterImagesFirstPageHTMLData = "";
+  private _stillFrameImagesFirstPageHTMLData = "";
+  private _awardsPageHTMLData = "";
+  private _quotesPageHTMLData = "";
+  private _goofsPageHTMLData = "";
+  private _criticReviewsPageHTMLData = "";
 
   // cheerio loaded instances
   private _mainPageCheerio: CheerioAPI = loadCheerio("");
