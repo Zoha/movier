@@ -415,7 +415,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
       return;
     }
     const deathDate = dayjs(
-      `${deathDateRaw?.year}-${deathDateRaw?.month}-${deathDateRaw?.day}`,
+      `${deathDateRaw.year}-${deathDateRaw.month}-${deathDateRaw.day}`,
       "YYYY-M-D"
     ).toDate();
 
