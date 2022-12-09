@@ -34,7 +34,6 @@ const dataToTest: TestDataType[] = [
       cinematographer: 1,
       soundtrack: 5,
       producer: 1,
-      self: 42,
       thanks: 9,
     },
     knownFormFirstItemDetails: {
@@ -55,10 +54,9 @@ const dataToTest: TestDataType[] = [
     birthDate: "1980-12-19",
     birthPlace: "Los Angeles, California, USA",
     filmographyData: {
-      actor: 62,
+      actor: 60,
       soundtrack: 4,
-      producer: 17,
-      self: 193,
+      producer: 14,
       thanks: 7,
     },
     knownFormFirstItemDetails: {
@@ -80,7 +78,6 @@ const dataToTest: TestDataType[] = [
       actress: 24,
       soundtrack: 3,
       producer: 1,
-      self: 81,
     },
     knownFormFirstItemDetails: {
       name: "Game of Thrones",

@@ -1,6 +1,7 @@
+import { PersonFilmographyData } from "./../externalInterfaces/IMDBPersonFilmographyDataInterface";
 import dayjs from "dayjs";
 import { IPersonalDetailItem } from "../interfaces";
-import { ImageType, Source, TitleMainType } from "../enums";
+import { ImageType, IMDBPathType, Source, TitleMainType } from "../enums";
 import { load as loadCheerio, CheerioAPI, Cheerio, Element } from "cheerio";
 import { Language } from "../enums";
 import {
@@ -17,7 +18,10 @@ import { formatHTMLText } from "../utils/formatHTMLText";
 import { stripHTMLText } from "../utils/stripHTMLText";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
-import { getRequest } from "../requestClient";
+import { getRequest, graphqlRequest } from "../requestClient";
+import { PersonDetailsNextData } from "../externalInterfaces/IMDBPersonNextDataInterface";
+import { IMDB_API_BASE_URL } from "../constants";
+import { convertIMDBTitleIdToUrl } from "../utils/convertIMDBTitleIdToUrl";
 
 export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   private url: string;
@@ -31,6 +35,9 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   private bioPageCheerio!: CheerioAPI;
   private mediaIndexPageCheerio!: CheerioAPI;
 
+  private mainPageNextData: PersonDetailsNextData = {};
+  private filmographyData: PersonFilmographyData = {};
+
   constructor(url: string) {
     this.url = url;
   }
@@ -38,6 +45,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   async getDetails(): Promise<IPerson | undefined> {
     await Promise.all([
       this.getMainPageHTMLData(),
+      this.getFilmographyData(),
       this.getBioPageHTMLData(),
       this.getMediaIndexPageHTMLData(),
     ]);
@@ -48,6 +56,10 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     const apiResult = await getRequest(this.url);
     this.mainPageHTMLData = apiResult.data;
     this.mainPageCheerio = loadCheerio(apiResult.data);
+    const nextDataString =
+      this.mainPageCheerio("#__NEXT_DATA__")?.html()?.trim() || "{}";
+
+    this.mainPageNextData = JSON.parse(nextDataString);
   }
 
   async getBioPageHTMLData() {
@@ -62,6 +74,16 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     const apiResult = await getRequest(url);
     this.mediaIndexPageHTMLData = apiResult.data;
     this.mediaIndexPageCheerio = loadCheerio(apiResult.data);
+  }
+
+  async getFilmographyData() {
+    const apiResult = await graphqlRequest(IMDB_API_BASE_URL, {
+      operationName: "Filmography",
+      variables: { id: this.sourceId },
+      query:
+        'query Filmography ($id : ID!) { \n name (id : $id) { \n credits (first : 5000 , filter : { excludeCategories : ["self" , "archive_footage"]} ) { \n total, \n edges { \n node {  \n title { \n id \n originalTitleText { \n text \n } \n primaryImage { \n url, \n width, \n height, \n caption { \n plainText \n } \n } \n releaseYear { \n year \n endYear \n }, \n genres { \n genres { \n text \n } \n } \n productionStatus { \n currentProductionStage { \n id \n } \n } \n } \n category { \n text, \n } \n ...on Cast { \n characters { \n name \n }, \n episodeCredits (last: 1000) { \n total \n yearRange { \n endYear, \n year \n } \n edges { \n node { \n title { \n id \n originalTitleText { \n text \n } \n releaseYear { \n year \n } \n series { \n displayableEpisodeNumber { \n displayableSeason { \n text \n } \n episodeNumber { \n text \n } \n } \n } \n } \n } \n } \n } \n }, \n attributes { \n text \n } \n } \n  \n } \n pageInfo { \n hasNextPage \n } \n } \n } \n}',
+    });
+    this.filmographyData = apiResult.data as PersonFilmographyData;
   }
 
   addToPathOfUrl(
@@ -84,7 +106,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
       name: this.name,
       miniBio: this.miniBio,
       knownFor: this.knownFor,
-      filmography: this.filmography,
+      filmography: this.filmography, // TODO:
       profileImage: this.profileImage,
       allImages: this.allImages,
       personalDetails: this.personalDetails,
@@ -124,8 +146,9 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as string;
     }
-    const $ = this.mainPageCheerio;
-    const name = formatHTMLText($("h1.header .itemprop").first().text());
+    const name = formatHTMLText(
+      this.mainPageNextData.props?.pageProps?.aboveTheFold?.nameText?.text
+    );
 
     return cacheDataManager.cacheAndReturnData(name);
   }
@@ -158,24 +181,37 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
 
     const knownForItems: IKnownForItem[] = [];
     const $ = this.mainPageCheerio;
-    const knownForContainerElements = $("#knownfor .knownfor-title");
+    const knownForContainerElements = $(
+      "[data-testid='nm_flmg_kwn_for'] .ipc-list-card--span"
+    );
     knownForContainerElements.each((i, el) => {
       const years = $(el)
-        .find(".knownfor-year .knownfor-ellipsis")
+        .find(
+          ".ipc-primary-image-list-card__content-bottom .ipc-primary-image-list-card__secondary-text"
+        )
         .text()
-        .replace(/^\(/g, "")
-        .replace(/\)$/g, "")
-        .split("-")
+        .trim()
+        .split(" ")[0]
+        .split("–")
         .map(Number);
       const thumbnailImgEl = $(el).find("img").first();
       knownForItems.push({
-        name: formatHTMLText($(el).find(".knownfor-title-role a").text()),
-        role: formatHTMLText($(el).find(".knownfor-title-role span").text()),
+        name: formatHTMLText(
+          $(el).find(".ipc-primary-image-list-card__title").first().text()
+        ),
+        role: formatHTMLText(
+          $(el)
+            .find(
+              ".ipc-primary-image-list-card__content-mid-bottom .ipc-primary-image-list-card__secondary-text"
+            )
+            .first()
+            .text()
+        ),
         startYear: years[0],
         endYear: years[1] ?? years[0],
         posterImage: this.extractImageFullDetailsFromImgElement(thumbnailImgEl),
         source: this.extractSourceDetailsFromAElement(
-          $(el).find(".knownfor-title-role a"),
+          $(el).find("a.ipc-lockup-overlay").first(),
           "tt"
         ),
       });
@@ -230,52 +266,36 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
       return cacheDataManager.data as IFilmographyItem[];
     }
 
-    const filmographyItems: IFilmographyItem[] = [];
-    const $ = this.mainPageCheerio;
-
-    $("#filmography .head").each((i, el) => {
-      const category = formatHTMLText($(el).find("a").text(), {
-        toLowerCase: true,
-      });
-      $(el)
-        .next(".filmo-category-section")
-        .find(".filmo-row")
-        .each((i, subEl) => {
-          const years = formatHTMLText($(subEl).find(".year_column").text())
-            .split("-")
-            .map((s) => parseInt(s, 10));
-          const name = formatHTMLText($(subEl).find("b a").first().text());
-          if (!name) {
-            return;
-          }
-          filmographyItems.push({
-            category: category,
-            endYear: years[0] ?? 0,
-            startYear: years[1] ?? years[0] ?? 0,
-            name: name,
-            role: formatHTMLText(
-              $(subEl)
-                .clone()
-                .children()
-                .remove()
-                .end()
-                .text()
-                .replace(/.+\w\)\n\n/g, "")
-                .replace(/[()]/g, "")
-            ),
-            source: this.extractSourceDetailsFromAElement(
-              $(subEl).find("b a").first(),
-              "tt"
-            ),
-            productionStatus: formatHTMLText(
-              $(subEl).find(".in_production").text()
-            ),
-            type: $(subEl).text().toLowerCase().includes("series")
-              ? TitleMainType.Series
-              : TitleMainType.Movie,
-          });
-        });
-    });
+    let filmographyItems: IFilmographyItem[] = [];
+    filmographyItems =
+      this.filmographyData?.name?.credits?.edges?.map(
+        (credit): IFilmographyItem => {
+          const startYear =
+            credit.node?.episodeCredits?.yearRange?.year ??
+            credit.node?.title?.releaseYear?.year ??
+            0;
+          return {
+            category: credit.node?.category?.text?.toLocaleLowerCase() ?? "",
+            endYear:
+              credit.node?.episodeCredits?.yearRange?.endYear ?? startYear,
+            name: credit.node?.title?.originalTitleText?.text ?? "",
+            productionStatus:
+              credit.node?.title?.productionStatus?.currentProductionStage
+                ?.id ?? "",
+            roles: credit.node?.characters?.map((i) => i.name ?? "") ?? [],
+            source: {
+              sourceId: credit.node?.title?.id ?? "",
+              sourceType: Source.IMDB,
+              sourceUrl: convertIMDBTitleIdToUrl(
+                credit.node?.title?.id ?? "",
+                IMDBPathType.Title
+              ),
+            },
+            startYear,
+            type: TitleMainType.Movie,
+          };
+        }
+      ) ?? [];
 
     return cacheDataManager.cacheAndReturnData(filmographyItems);
   }
@@ -358,15 +378,13 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as Date;
     }
-    const $ = this.mainPageCheerio;
-    const birthDateString = $("#name-born-info")
-      .find("time")
-      .first()
-      .attr("datetime");
-    if (!birthDateString) {
-      return;
-    }
-    const birthDate = dayjs(birthDateString, "YYYY-M-D").toDate();
+    const birthDateRaw =
+      this.mainPageNextData?.props?.pageProps?.mainColumnData?.birthDate
+        ?.dateComponents;
+    const birthDate = dayjs(
+      `${birthDateRaw?.year}-${birthDateRaw?.month}-${birthDateRaw?.day}`,
+      "YYYY-M-D"
+    ).toDate();
     return cacheDataManager.cacheAndReturnData(birthDate);
   }
 
@@ -375,21 +393,14 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as string;
     }
-    const $ = this.mainPageCheerio;
-    const birthPlaceEl = $("#name-born-info")
-      .clone()
-      .find("time")
-      .remove()
-      .end()
-      .find("a")
-      .first();
-    if (!birthPlaceEl.length) {
+    const birthPlace =
+      this.mainPageNextData?.props?.pageProps?.mainColumnData?.birthLocation
+        ?.text ?? "";
+    if (!birthPlace.length) {
       return;
     }
 
-    return cacheDataManager.cacheAndReturnData(
-      formatHTMLText(birthPlaceEl.text())
-    );
+    return cacheDataManager.cacheAndReturnData(formatHTMLText(birthPlace));
   }
 
   get deathDate(): Date | undefined {
@@ -397,15 +408,17 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as Date;
     }
-    const $ = this.mainPageCheerio;
-    const deathDateString = $("#name-death-info")
-      .find("time")
-      .first()
-      .attr("datetime");
-    if (!deathDateString) {
+    const deathDateRaw =
+      this.mainPageNextData?.props?.pageProps?.mainColumnData?.deathDate
+        ?.dateComponents;
+    if (!deathDateRaw) {
       return;
     }
-    const deathDate = dayjs(deathDateString, "YYYY-M-D").toDate();
+    const deathDate = dayjs(
+      `${deathDateRaw.year}-${deathDateRaw.month}-${deathDateRaw.day}`,
+      "YYYY-M-D"
+    ).toDate();
+
     return cacheDataManager.cacheAndReturnData(deathDate);
   }
 
@@ -414,20 +427,13 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as string;
     }
-    const $ = this.mainPageCheerio;
-    const deathPlaceEl = $("#name-death-info")
-      .clone()
-      .find("time")
-      .remove()
-      .end()
-      .find("a")
-      .first();
-    if (!deathPlaceEl.length) {
+    const deathLocation =
+      this.mainPageNextData?.props?.pageProps?.mainColumnData?.deathLocation
+        ?.text ?? "";
+    if (!deathLocation.length) {
       return;
     }
 
-    return cacheDataManager.cacheAndReturnData(
-      formatHTMLText(deathPlaceEl.text())
-    );
+    return cacheDataManager.cacheAndReturnData(formatHTMLText(deathLocation));
   }
 }

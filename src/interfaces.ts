@@ -259,7 +259,7 @@ export interface IFilmographyItem {
   startYear: number;
   endYear: number;
   productionStatus: string;
-  role: string;
+  roles: string[];
   category: string; // TODO: make an enum for this
 }
 
