@@ -13,7 +13,7 @@
   "rules": {
     "indent": ["off", "tab"],
     "linebreak-style": ["error", "windows"],
-    "quotes": ["error", "double"],
+    "quotes": ["error", "prefer-double"],
     "semi": ["error", "always"],
     "@typescript-eslint/no-this-alias": [
       "error",

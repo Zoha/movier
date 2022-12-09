@@ -1,6 +1,7 @@
+import { PersonFilmographyData } from "./../externalInterfaces/IMDBPersonFilmographyDataInterface";
 import dayjs from "dayjs";
 import { IPersonalDetailItem } from "../interfaces";
-import { ImageType, Source, TitleMainType } from "../enums";
+import { ImageType, IMDBPathType, Source, TitleMainType } from "../enums";
 import { load as loadCheerio, CheerioAPI, Cheerio, Element } from "cheerio";
 import { Language } from "../enums";
 import {
@@ -17,8 +18,10 @@ import { formatHTMLText } from "../utils/formatHTMLText";
 import { stripHTMLText } from "../utils/stripHTMLText";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
-import { getRequest } from "../requestClient";
+import { getRequest, graphqlRequest } from "../requestClient";
 import { PersonDetailsNextData } from "../externalInterfaces/IMDBPersonNextDataInterface";
+import { IMDB_API_BASE_URL } from "../constants";
+import { convertIMDBTitleIdToUrl } from "../utils/convertIMDBTitleIdToUrl";
 
 export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   private url: string;
@@ -33,6 +36,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   private mediaIndexPageCheerio!: CheerioAPI;
 
   private mainPageNextData: PersonDetailsNextData = {};
+  private filmographyData: PersonFilmographyData = {};
 
   constructor(url: string) {
     this.url = url;
@@ -41,6 +45,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   async getDetails(): Promise<IPerson | undefined> {
     await Promise.all([
       this.getMainPageHTMLData(),
+      this.getFilmographyData(),
       this.getBioPageHTMLData(),
       this.getMediaIndexPageHTMLData(),
     ]);
@@ -71,6 +76,16 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     this.mediaIndexPageCheerio = loadCheerio(apiResult.data);
   }
 
+  async getFilmographyData() {
+    const apiResult = await graphqlRequest(IMDB_API_BASE_URL, {
+      operationName: "Filmography",
+      variables: { id: this.sourceId },
+      query:
+        'query Filmography ($id : ID!) { \n name (id : $id) { \n credits (first : 5000 , filter : { excludeCategories : ["self" , "archive_footage"]} ) { \n total, \n edges { \n node {  \n title { \n id \n originalTitleText { \n text \n } \n primaryImage { \n url, \n width, \n height, \n caption { \n plainText \n } \n } \n releaseYear { \n year \n endYear \n }, \n genres { \n genres { \n text \n } \n } \n productionStatus { \n currentProductionStage { \n id \n } \n } \n } \n category { \n text, \n } \n ...on Cast { \n characters { \n name \n }, \n episodeCredits (last: 1000) { \n total \n yearRange { \n endYear, \n year \n } \n edges { \n node { \n title { \n id \n originalTitleText { \n text \n } \n releaseYear { \n year \n } \n series { \n displayableEpisodeNumber { \n displayableSeason { \n text \n } \n episodeNumber { \n text \n } \n } \n } \n } \n } \n } \n } \n }, \n attributes { \n text \n } \n } \n  \n } \n pageInfo { \n hasNextPage \n } \n } \n } \n}',
+    });
+    this.filmographyData = apiResult.data as PersonFilmographyData;
+  }
+
   addToPathOfUrl(
     originalPath: string,
     joinPath: string,
@@ -91,7 +106,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
       name: this.name,
       miniBio: this.miniBio,
       knownFor: this.knownFor,
-      filmography: [], // TODO:
+      filmography: this.filmography, // TODO:
       profileImage: this.profileImage,
       allImages: this.allImages,
       personalDetails: this.personalDetails,
@@ -251,52 +266,36 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
       return cacheDataManager.data as IFilmographyItem[];
     }
 
-    const filmographyItems: IFilmographyItem[] = [];
-    const $ = this.mainPageCheerio;
-
-    $("#filmography .head").each((i, el) => {
-      const category = formatHTMLText($(el).find("a").text(), {
-        toLowerCase: true,
-      });
-      $(el)
-        .next(".filmo-category-section")
-        .find(".filmo-row")
-        .each((i, subEl) => {
-          const years = formatHTMLText($(subEl).find(".year_column").text())
-            .split("-")
-            .map((s) => parseInt(s, 10));
-          const name = formatHTMLText($(subEl).find("b a").first().text());
-          if (!name) {
-            return;
-          }
-          filmographyItems.push({
-            category: category,
-            endYear: years[0] ?? 0,
-            startYear: years[1] ?? years[0] ?? 0,
-            name: name,
-            role: formatHTMLText(
-              $(subEl)
-                .clone()
-                .children()
-                .remove()
-                .end()
-                .text()
-                .replace(/.+\w\)\n\n/g, "")
-                .replace(/[()]/g, "")
-            ),
-            source: this.extractSourceDetailsFromAElement(
-              $(subEl).find("b a").first(),
-              "tt"
-            ),
-            productionStatus: formatHTMLText(
-              $(subEl).find(".in_production").text()
-            ),
-            type: $(subEl).text().toLowerCase().includes("series")
-              ? TitleMainType.Series
-              : TitleMainType.Movie,
-          });
-        });
-    });
+    let filmographyItems: IFilmographyItem[] = [];
+    filmographyItems =
+      this.filmographyData?.name?.credits?.edges?.map(
+        (credit): IFilmographyItem => {
+          const startYear =
+            credit.node?.episodeCredits?.yearRange?.year ??
+            credit.node?.title?.releaseYear?.year ??
+            0;
+          return {
+            category: credit.node?.category?.text?.toLocaleLowerCase() ?? "",
+            endYear:
+              credit.node?.episodeCredits?.yearRange?.endYear ?? startYear,
+            name: credit.node?.title?.originalTitleText?.text ?? "",
+            productionStatus:
+              credit.node?.title?.productionStatus?.currentProductionStage
+                ?.id ?? "",
+            roles: credit.node?.characters?.map((i) => i.name ?? "") ?? [],
+            source: {
+              sourceId: credit.node?.title?.id ?? "",
+              sourceType: Source.IMDB,
+              sourceUrl: convertIMDBTitleIdToUrl(
+                credit.node?.title?.id ?? "",
+                IMDBPathType.Title
+              ),
+            },
+            startYear,
+            type: TitleMainType.Movie,
+          };
+        }
+      ) ?? [];
 
     return cacheDataManager.cacheAndReturnData(filmographyItems);
   }
