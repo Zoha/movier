@@ -132,7 +132,7 @@ const titlesToTest: ITitleTestData[] = [
       ],
     },
     mainRate: {
-      rate: 7.8,
+      rate: 7.9,
       minVotesCount: 1100000,
       assortedByRateLength: 10,
     },
@@ -150,7 +150,7 @@ const titlesToTest: ITitleTestData[] = [
     languages: ["english", "spanish"],
     firstCountriesOfOrigin: "united states",
     posterImageUrl:
-      "https://m.media-amazon.com/images/M/MV5BNjA3NGExZDktNDlhZC00NjYyLTgwNmUtZWUzMDYwMTZjZWUyXkEyXkFqcGdeQXVyMTU1MDM3NDk0.jpg",
+      "https://m.media-amazon.com/images/M/MV5BZDA0OGQxNTItMDZkMC00N2UyLTg3MzMtYTJmNjg3Nzk5MzRiXkEyXkFqcGdeQXVyMjUzOTY1NTc@.jpg",
     posterImageThumbnailsMinLength: 3,
     allImagesMinLength: 48,
     boxofficeBudget: 237000000,
