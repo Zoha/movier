@@ -20,8 +20,8 @@ import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
 import { getRequest, graphqlRequest } from "../requestClient";
 import { PersonDetailsNextData } from "../externalInterfaces/IMDBPersonNextDataInterface";
-import { IMDB_API_BASE_URL } from "../constants";
 import { convertIMDBTitleIdToUrl } from "../utils/convertIMDBTitleIdToUrl";
+import { personFilmographyQuery } from "../gql/personFilmographyQuery";
 
 export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   private url: string;
@@ -77,13 +77,10 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   }
 
   async getFilmographyData() {
-    const apiResult = await graphqlRequest(IMDB_API_BASE_URL, {
-      operationName: "Filmography",
-      variables: { id: this.sourceId },
-      query:
-        'query Filmography ($id : ID!) { \n name (id : $id) { \n credits (first : 5000 , filter : { excludeCategories : ["self" , "archive_footage"]} ) { \n total, \n edges { \n node {  \n title { \n id \n originalTitleText { \n text \n } \n primaryImage { \n url, \n width, \n height, \n caption { \n plainText \n } \n } \n releaseYear { \n year \n endYear \n }, \n genres { \n genres { \n text \n } \n } \n productionStatus { \n currentProductionStage { \n id \n } \n } \n } \n category { \n text, \n } \n ...on Cast { \n characters { \n name \n }, \n episodeCredits (last: 1000) { \n total \n yearRange { \n endYear, \n year \n } \n edges { \n node { \n title { \n id \n originalTitleText { \n text \n } \n releaseYear { \n year \n } \n series { \n displayableEpisodeNumber { \n displayableSeason { \n text \n } \n episodeNumber { \n text \n } \n } \n } \n } \n } \n } \n } \n }, \n attributes { \n text \n } \n } \n  \n } \n pageInfo { \n hasNextPage \n } \n } \n } \n}',
+    const apiResult = await graphqlRequest(personFilmographyQuery, {
+      id: this.sourceId,
     });
-    this.filmographyData = apiResult.data as PersonFilmographyData;
+    this.filmographyData = apiResult as PersonFilmographyData;
   }
 
   addToPathOfUrl(

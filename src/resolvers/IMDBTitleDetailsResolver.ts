@@ -24,7 +24,7 @@ import {
 } from "../enums";
 import { ITitle, ITitleDetailsResolver } from "../interfaces";
 import { IMDBTitleApiRawData } from "../externalInterfaces/IMDBTitleApiRawData";
-import { graphqlRequest2 } from "../requestClient";
+import { graphqlRequest } from "../requestClient";
 import { titleDetailsQuery } from "../gql/titleDetailsQuery";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
 import { convertIMDBTitleIdToUrl } from "../utils/convertIMDBTitleIdToUrl";
@@ -81,7 +81,7 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
 
   async getTitleRawDetails() {
     const titleId = extractIMDBIdFromUrl(this.url, "tt");
-    const rawData = await graphqlRequest2(titleDetailsQuery, {
+    const rawData = await graphqlRequest(titleDetailsQuery, {
       titleId,
     });
     this.titleApiRawData = rawData.title;
@@ -324,31 +324,29 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
   }
 
   get allImages(): IImageDetails[] {
-    return (
-      [
-        ...(this.titleApiRawData.posterImages?.edges ?? []),
-        ...(this.titleApiRawData.stillFrameImages?.edges ?? []),
-      ]
-        .map((i) => i.node)
-        .map((i) => ({
-          isThumbnail: false,
-          sourceType: Source.IMDB,
-          title: i.caption?.plainText ?? "",
-          type: i.type ?? "",
-          url: i.url ?? "",
-          names: i.names?.map((i) => ({
-            source: this.extractSourceFromId(i.id ?? ""),
-            name: i.nameText?.text ?? "",
-          })),
-          ...(!!i.width &&
-            !!i.height && {
-              size: {
-                width: i.width,
-                height: i.height,
-              },
-            }),
-        })) ?? []
-    );
+    return [
+      ...(this.titleApiRawData.posterImages?.edges ?? []),
+      ...(this.titleApiRawData.stillFrameImages?.edges ?? []),
+    ]
+      .map((i) => i.node)
+      .map((i) => ({
+        isThumbnail: false,
+        sourceType: Source.IMDB,
+        title: i.caption?.plainText ?? "",
+        type: i.type ?? "",
+        url: i.url ?? "",
+        names: i.names?.map((i) => ({
+          source: this.extractSourceFromId(i.id ?? ""),
+          name: i.nameText?.text ?? "",
+        })),
+        ...(!!i.width &&
+          !!i.height && {
+            size: {
+              width: i.width,
+              height: i.height,
+            },
+          }),
+      }));
   }
 
   get languages(): string[] {
@@ -419,8 +417,8 @@ export class IMDBTitleDetailsResolver implements ITitleDetailsResolver {
       ...(metacriticRate
         ? [
             {
-              rate: metacriticRate?.metascore?.score ?? 0,
-              votesCount: metacriticRate?.metascore?.reviewCount ?? 0,
+              rate: metacriticRate.metascore?.score ?? 0,
+              votesCount: metacriticRate.metascore?.reviewCount ?? 0,
               rateSource: Source.MetaCritics,
             },
           ]

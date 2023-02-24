@@ -1,5 +1,5 @@
-import { IPersonDetails, ITitleKey } from "../interfaces";
-import { Genre, ImageType, Language, Source, TitleMainType } from "../enums";
+import { IPersonDetails } from "../interfaces";
+import { Genre, Language, Source, TitleMainType } from "../enums";
 import { IMDBTitleDetailsResolver } from "./IMDBTitleDetailsResolver";
 
 export interface ITitleTestData {

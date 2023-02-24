@@ -1,11 +1,4 @@
-import {
-  Genre,
-  Source,
-  TitleMainType,
-  Language,
-  AwardOutcome,
-  ImageType,
-} from "./enums";
+import { Genre, Source, TitleMainType, Language, AwardOutcome } from "./enums";
 
 export interface ITitle {
   detailsLang: Language;
