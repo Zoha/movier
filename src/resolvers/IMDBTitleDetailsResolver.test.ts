@@ -1,6 +1,6 @@
 import { IPersonDetails, ITitleKey } from "../interfaces";
 import { Genre, ImageType, Language, Source, TitleMainType } from "../enums";
-import { IMDBGraphTitleDetailsResolver } from "./IMDBGraphTitleDetailsResolver";
+import { IMDBTitleDetailsResolver } from "./IMDBTitleDetailsResolver";
 
 export interface ITitleTestData {
   url: string;
@@ -271,7 +271,7 @@ describe("imdb title details resolver", () => {
     test(
       `check ${testData.name} ${testData.titleYear} result`,
       async () => {
-        const resolver = new IMDBGraphTitleDetailsResolver(testData.url);
+        const resolver = new IMDBTitleDetailsResolver(testData.url);
         const result = await resolver.getDetails();
         expect(result).not.toBe(undefined);
         if (!result) {
