@@ -125,7 +125,7 @@ const titlesToTest: ITitleTestData[] = [
       ],
     },
     mainRate: {
-      rate: 7.8,
+      rate: 7.9,
       minVotesCount: 1100000,
     },
     metaScore: 83,
