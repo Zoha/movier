@@ -1,5 +1,5 @@
 import axios from "axios";
-import { request, GraphQLClient } from "graphql-request";
+import { GraphQLClient } from "graphql-request";
 import { IMDB_API_BASE_URL } from "./constants";
 
 interface getRequestResponse {
