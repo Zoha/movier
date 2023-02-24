@@ -151,11 +151,12 @@ export interface IProductionCompanyDetails {
 }
 
 export interface IImageDetails {
-  type: ImageType;
+  type: string;
   title: string;
   sourceType: Source;
   url: string;
   isThumbnail: boolean;
+  names?: IPersonDetails[];
   size?: {
     width: number;
     height: number;
@@ -184,32 +185,23 @@ export interface IFoundedPersonDetails {
 
 export interface IRuntimeDetails {
   title: string;
-  hours: number;
-  minutes: number;
   seconds: number;
 }
 
 export interface IAwardDetails {
-  source: ISourceDetails;
   mainEvent: string;
   eventYear: number;
   subEvent: string;
   awardTitle: string;
   outcome: AwardOutcome;
   details?: string;
-  relatedPersons: IPersonDetails[];
-  relatedTitles: {
-    name: string;
-    source: ISourceDetails;
-  }[];
 }
 
 export interface IAwardsSummaryDetails {
+  eventName: string;
+  awardName: string;
   totalNominations: number;
-  nominationsOutcome: number;
   wins: number;
-  oscarWins: number;
-  emmyWins: number;
 }
 
 export interface ITitleDetailsResolver {
@@ -275,16 +267,19 @@ export interface ITitleQuoteItem {
 }
 
 export interface ITitleQuoteLineItemDetails {
-  character: IQuoteCharacterDetails;
-  line: string;
+  characters: IQuoteCharacterDetails[];
+  line?: string;
+  stageDirection?: string;
 }
 
 export interface IQuoteCharacterDetails {
   name: string;
+  playerName: string;
   playerSource: ISourceDetails;
 }
 
 export interface ITitleGoofItem {
   groupName: string;
+  isSpoiler: boolean;
   details: string;
 }
