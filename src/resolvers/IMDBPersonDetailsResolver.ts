@@ -15,7 +15,6 @@ import {
 import { ResolverCacheManager } from "../utils/ResolverCacheManager";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
 import { formatHTMLText } from "../utils/formatHTMLText";
-import { stripHTMLText } from "../utils/stripHTMLText";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
 import { getRequest, graphqlRequest } from "../requestClient";
