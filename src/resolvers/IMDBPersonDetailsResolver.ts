@@ -27,12 +27,10 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   private url: string;
   private resolverCacheManager = new ResolverCacheManager();
   private mainPageHTMLData!: string;
-  private bioPageHTMLData!: string;
   private mediaIndexPageHTMLData!: string;
 
   // cheerio loaded instances
   private mainPageCheerio!: CheerioAPI;
-  private bioPageCheerio!: CheerioAPI;
   private mediaIndexPageCheerio!: CheerioAPI;
 
   private mainPageNextData: PersonDetailsNextData = {};
@@ -46,7 +44,6 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     await Promise.all([
       this.getMainPageHTMLData(),
       this.getPersonDetailsFromApi(),
-      this.getBioPageHTMLData(),
       this.getMediaIndexPageHTMLData(),
     ]);
     return this.generateReturnDetailsData();
@@ -60,13 +57,6 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
       this.mainPageCheerio("#__NEXT_DATA__")?.html()?.trim() || "{}";
 
     this.mainPageNextData = JSON.parse(nextDataString);
-  }
-
-  async getBioPageHTMLData() {
-    const url = this.addToPathOfUrl(this.url, "/bio");
-    const apiResult = await getRequest(url);
-    this.bioPageHTMLData = apiResult.data;
-    this.bioPageCheerio = loadCheerio(apiResult.data);
   }
 
   async getMediaIndexPageHTMLData() {
