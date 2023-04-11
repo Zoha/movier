@@ -1,7 +1,7 @@
 import { gql } from "graphql-request";
 
-export const personFilmographyQuery = gql`
-  query Filmography($id: ID!) {
+export const personDetailsQuery = gql`
+  query PersonDetails($id: ID!) {
     name(id: $id) {
       credits(
         first: 5000
@@ -84,6 +84,31 @@ export const personFilmographyQuery = gql`
         pageInfo {
           hasNextPage
         }
+      }
+      primaryImage {
+        url
+        caption {
+          plainText
+        }
+      }
+      bio {
+        text {
+          plainText
+        }
+      }
+      age {
+        text
+      }
+      deathCause {
+        text
+      }
+      height {
+        measurement {
+          value
+        }
+      }
+      nickNames {
+        text
       }
     }
   }

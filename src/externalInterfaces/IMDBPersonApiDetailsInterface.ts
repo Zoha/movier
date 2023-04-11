@@ -1,9 +1,34 @@
-export interface PersonFilmographyData {
+export interface PersonApiDetailsInterface {
   name?: Name;
 }
 
 export interface Name {
   credits?: Credits;
+  bio?: {
+    text?: {
+      plainText: string;
+    };
+  };
+  age?: {
+    text: string;
+  };
+  deathCause?: {
+    text: string;
+  };
+  height?: {
+    measurement: {
+      value: string;
+    };
+  };
+  nickNames?: {
+    text: string;
+  }[];
+  primaryImage?: {
+    url?: string;
+    caption?: {
+      plainText: string;
+    };
+  };
 }
 
 export interface Credits {

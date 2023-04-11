@@ -1,4 +1,4 @@
-import { PersonFilmographyData } from "./../externalInterfaces/IMDBPersonFilmographyDataInterface";
+import { PersonApiDetailsInterface } from "../externalInterfaces/IMDBPersonApiDetailsInterface";
 import dayjs from "dayjs";
 import { IPersonalDetailItem } from "../interfaces";
 import { ImageType, IMDBPathType, Source, TitleMainType } from "../enums";
@@ -15,28 +15,25 @@ import {
 import { ResolverCacheManager } from "../utils/ResolverCacheManager";
 import { extractIMDBIdFromUrl } from "../utils/extractIMDBIdFromUrl";
 import { formatHTMLText } from "../utils/formatHTMLText";
-import { stripHTMLText } from "../utils/stripHTMLText";
 import { convertIMDBPathToIMDBUrl } from "../utils/convertIMDBPathToIMDBUrl";
 import { getIMDBFullSizeImageFromThumbnailUrl } from "../utils/getIMDBFullSizeImageFromThumbnailUrl";
 import { getRequest, graphqlRequest } from "../requestClient";
 import { PersonDetailsNextData } from "../externalInterfaces/IMDBPersonNextDataInterface";
 import { convertIMDBTitleIdToUrl } from "../utils/convertIMDBTitleIdToUrl";
-import { personFilmographyQuery } from "../gql/personFilmographyQuery";
+import { personDetailsQuery } from "../gql/personDetailsQuery";
 
 export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   private url: string;
   private resolverCacheManager = new ResolverCacheManager();
   private mainPageHTMLData!: string;
-  private bioPageHTMLData!: string;
   private mediaIndexPageHTMLData!: string;
 
   // cheerio loaded instances
   private mainPageCheerio!: CheerioAPI;
-  private bioPageCheerio!: CheerioAPI;
   private mediaIndexPageCheerio!: CheerioAPI;
 
   private mainPageNextData: PersonDetailsNextData = {};
-  private filmographyData: PersonFilmographyData = {};
+  private personApiDetails: PersonApiDetailsInterface = {};
 
   constructor(url: string) {
     this.url = url;
@@ -45,8 +42,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
   async getDetails(): Promise<IPerson | undefined> {
     await Promise.all([
       this.getMainPageHTMLData(),
-      this.getFilmographyData(),
-      this.getBioPageHTMLData(),
+      this.getPersonDetailsFromApi(),
       this.getMediaIndexPageHTMLData(),
     ]);
     return this.generateReturnDetailsData();
@@ -62,13 +58,6 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     this.mainPageNextData = JSON.parse(nextDataString);
   }
 
-  async getBioPageHTMLData() {
-    const url = this.addToPathOfUrl(this.url, "/bio");
-    const apiResult = await getRequest(url);
-    this.bioPageHTMLData = apiResult.data;
-    this.bioPageCheerio = loadCheerio(apiResult.data);
-  }
-
   async getMediaIndexPageHTMLData() {
     const url = this.addToPathOfUrl(this.url, "/mediaindex");
     const apiResult = await getRequest(url);
@@ -76,11 +65,11 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     this.mediaIndexPageCheerio = loadCheerio(apiResult.data);
   }
 
-  async getFilmographyData() {
-    const apiResult = await graphqlRequest(personFilmographyQuery, {
+  async getPersonDetailsFromApi() {
+    const apiResult = await graphqlRequest(personDetailsQuery, {
       id: this.sourceId,
     });
-    this.filmographyData = apiResult as PersonFilmographyData;
+    this.personApiDetails = apiResult as PersonApiDetailsInterface;
   }
 
   addToPathOfUrl(
@@ -103,7 +92,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
       name: this.name,
       miniBio: this.miniBio,
       knownFor: this.knownFor,
-      filmography: this.filmography, // TODO:
+      filmography: this.filmography,
       profileImage: this.profileImage,
       allImages: this.allImages,
       personalDetails: this.personalDetails,
@@ -155,19 +144,11 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as string[];
     }
-    const $ = this.bioPageCheerio;
-    const miniBioFullHTML =
-      $("a[name='mini_bio']")
-        .next("h4")
-        .next(".soda")
-        .find("p")
-        .first()
-        .html() ?? "";
-    const miniBio = miniBioFullHTML
-      .split(/<br><br>/)
-      .map((t) => stripHTMLText(t.trim()));
+    const miniBioFullText =
+      this.personApiDetails.name?.bio?.text?.plainText ?? "";
+    const miniBioParts = miniBioFullText.split("\n").filter(Boolean);
 
-    return cacheDataManager.cacheAndReturnData(miniBio);
+    return cacheDataManager.cacheAndReturnData(miniBioParts);
   }
 
   get knownFor(): IKnownForItem[] {
@@ -265,7 +246,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
 
     let filmographyItems: IFilmographyItem[] = [];
     filmographyItems =
-      this.filmographyData?.name?.credits?.edges?.map(
+      this.personApiDetails?.name?.credits?.edges?.map(
         (credit): IFilmographyItem => {
           const startYear =
             credit.node?.episodeCredits?.yearRange?.year ??
@@ -302,15 +283,16 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as IImageDetails;
     }
-    const $ = this.bioPageCheerio;
-    const imgElement = $(".poster").first();
-    if (!imgElement.length) {
-      return;
-    }
-    const imageDetails = this.extractImageFullDetailsFromImgElement(
-      imgElement,
-      ImageType.ProfileImage
-    );
+
+    const primaryImage = this.personApiDetails.name?.primaryImage;
+    const imageDetails = {
+      isThumbnail: false,
+      sourceType: Source.IMDB,
+      title: primaryImage?.caption?.plainText ?? "",
+      type: ImageType.Poster,
+      url: primaryImage?.url ?? "",
+      thumbnails: [],
+    };
 
     return cacheDataManager.cacheAndReturnData(imageDetails);
   }
@@ -336,38 +318,34 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     if (cacheDataManager.hasData) {
       return cacheDataManager.data as IPersonalDetailItem[];
     }
-    const $ = this.bioPageCheerio;
-    const personalDetails: IPersonalDetailItem[] = [];
-    const extractDetailsFromTableRow = (trEl: Element) => {
-      const a = $(trEl).find("td:eq(1)").find("a").first();
-      const aUrl = a.attr("href");
-      personalDetails.push({
-        title: formatHTMLText($(trEl).find("td:eq(0)").text(), {
-          toLowerCase: true,
-        }),
-        details: formatHTMLText(
-          $(trEl)
-            .find("td:eq(1)")
-            .text()
-            .replace(/\s{2,}/g, " ")
-        ),
-        relatedSources: aUrl?.startsWith("/name/nm")
-          ? [this.extractSourceDetailsFromAElement(a, "nm")]
-          : [],
-      });
-    };
-    $("a[name='overview']")
-      .next("h4")
-      .next("table")
-      .find("tr")
-      .each((i, trEl) => extractDetailsFromTableRow(trEl));
-    $("a[name='family']")
-      .next("h4")
-      .next("table")
-      .find("tr")
-      .each((i, trEl) => extractDetailsFromTableRow(trEl));
+    const rawPersonalDetails: IPersonalDetailItem[] = [];
 
-    return cacheDataManager.cacheAndReturnData(personalDetails);
+    rawPersonalDetails.push({
+      title: "age",
+      details: this.personApiDetails.name?.age?.text ?? "",
+      relatedSources: [],
+    });
+    rawPersonalDetails.push({
+      title: "deathCause",
+      details: this.personApiDetails.name?.deathCause?.text ?? "",
+      relatedSources: [],
+    });
+    rawPersonalDetails.push({
+      title: "height",
+      details: this.personApiDetails.name?.height?.measurement?.value ?? "",
+      relatedSources: [],
+    });
+    rawPersonalDetails.push({
+      title: "height",
+      details:
+        this.personApiDetails.name?.nickNames?.map((i) => i.text).join(",") ??
+        "",
+      relatedSources: [],
+    });
+
+    const personDetails = rawPersonalDetails.filter((i) => i.details);
+
+    return cacheDataManager.cacheAndReturnData(personDetails);
   }
 
   get birthDate(): Date | undefined {

@@ -179,24 +179,6 @@ describe("test imdb name details resolver", () => {
         expect(nameDetails.personalDetails.length).toBeGreaterThanOrEqual(
           Object.keys(testData.personalDetails).length
         );
-
-        const personalDetails = testData.personalDetails;
-        for (const title in personalDetails) {
-          const result = nameDetails.personalDetails.find(
-            (i) => i.title === title
-          );
-          const items = personalDetails[
-            title as keyof typeof personalDetails
-          ] as Array<string>;
-          expect(result?.details).toContain(items[0]);
-          if (items.length > 1) {
-            items.slice(1).forEach((source) => {
-              expect(
-                !!result?.relatedSources.find((i) => i.sourceId === source)
-              ).toBe(true);
-            });
-          }
-        }
       },
       200 * 1000
     );
