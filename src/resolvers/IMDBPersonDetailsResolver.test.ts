@@ -38,7 +38,7 @@ const dataToTest: TestDataType[] = [
     },
     knownFormFirstItemDetails: {
       name: "Apocalypse Now",
-      role: "Colonel Walter E. Kurtz",
+      role: "Col. Walter E. Kurtz",
       startYear: 1979,
     },
     personalDetails: {
