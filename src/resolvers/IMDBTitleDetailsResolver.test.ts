@@ -254,7 +254,7 @@ const titlesToTest: ITitleTestData[] = [
   },
   {
     url: "https://www.imdb.com/title/tt14544192",
-    name: "inside",
+    name: "bo burnham: inside",
     mainType: TitleMainType.TVSpecial,
     sourceId: "tt14544192",
   },
