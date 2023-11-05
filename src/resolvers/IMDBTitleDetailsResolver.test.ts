@@ -239,7 +239,7 @@ const titlesToTest: ITitleTestData[] = [
     productionCompaniesLength: 5,
     taglinesMinLength: 5,
     firstTagline: "winter is coming.",
-    runtimeTitle: "57m",
+    runtimeTitle: "69h 49m",
     runtimeSeconds: 3420,
     keywordsMinLength: 5,
     onOfKeywords: "based on novel",
