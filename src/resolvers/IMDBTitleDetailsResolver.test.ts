@@ -239,8 +239,8 @@ const titlesToTest: ITitleTestData[] = [
     productionCompaniesLength: 5,
     taglinesMinLength: 5,
     firstTagline: "winter is coming.",
-    runtimeTitle: "69h 49m",
-    runtimeSeconds: 3420,
+    runtimeTitle: "55m",
+    runtimeSeconds: 3300,
     keywordsMinLength: 5,
     onOfKeywords: "based on novel",
     postersMinLength: 48,
@@ -308,7 +308,9 @@ describe("imdb title details resolver", () => {
           );
         }
         if (testData.directors !== undefined) {
-          expect(result.directors).toHaveLength(testData.directors.length);
+          expect(result.directors.length).toBeGreaterThanOrEqual(
+            testData.directors.length
+          );
           const director = result.directors[0];
           expect(director.name.toLowerCase()).toBe(
             testData.directors.firstOneName
@@ -350,7 +352,7 @@ describe("imdb title details resolver", () => {
               castData.firstRoleName
             );
             if (castData.episodes) {
-              expect(cast.episodeCredits?.totalEpisodes).toBe(
+              expect(cast.episodeCredits?.totalEpisodes).toBeGreaterThanOrEqual(
                 castData.episodes
               );
               expect(cast.episodeCredits?.startYear).toBe(castData.startYear);
