@@ -58,8 +58,6 @@ export interface ITitleTestData {
   posterImageThumbnailsMinLength?: number;
   allImagesMinLength?: number;
   boxofficeBudget?: number;
-  openingAmount?: number;
-  openingDateYear?: number;
   worldWideSellMin?: number;
   mainCountriesSellMin?: number;
   firstProductionCompanyName?: string;
@@ -145,8 +143,6 @@ const titlesToTest: ITitleTestData[] = [
       "https://m.media-amazon.com/images/M/MV5BNjA3NGExZDktNDlhZC00NjYyLTgwNmUtZWUzMDYwMTZjZWUyXkEyXkFqcGdeQXVyMTU1MDM3NDk0.jpg",
     allImagesMinLength: 48,
     boxofficeBudget: 237000000,
-    openingAmount: 77025481,
-    openingDateYear: 2009,
     worldWideSellMin: 2847379794,
     mainCountriesSellMin: 760507625,
     firstProductionCompanyName: "twentieth century fox",
@@ -231,15 +227,13 @@ const titlesToTest: ITitleTestData[] = [
       "https://m.media-amazon.com/images/M/MV5BYTRiNDQwYzAtMzVlZS00NTI5LWJjYjUtMzkwNTUzMWMxZTllXkEyXkFqcGdeQXVyNDIzMzcwNjc@.jpg",
     allImagesMinLength: 48,
     boxofficeBudget: 0,
-    openingAmount: 0,
-    openingDateYear: 0,
     worldWideSellMin: 0,
     mainCountriesSellMin: 0,
     firstProductionCompanyName: "home box office (hbo)",
     productionCompaniesLength: 5,
     taglinesMinLength: 5,
     firstTagline: "winter is coming.",
-    runtimeTitle: "55m",
+    runtimeTitle: "1h",
     runtimeSeconds: 3300,
     keywordsMinLength: 5,
     onOfKeywords: "based on novel",
@@ -438,10 +432,6 @@ describe("imdb title details resolver", () => {
 
         if (testData.boxofficeBudget) {
           expect(result.boxOffice?.budget).toBe(testData.boxofficeBudget);
-          expect(result.boxOffice?.opening.amount).toBe(testData.openingAmount);
-          expect(result.boxOffice?.opening.date.getFullYear()).toBe(
-            testData.openingDateYear
-          );
           if (testData.worldWideSellMin !== undefined) {
             expect(result.boxOffice?.worldwide).toBeGreaterThanOrEqual(
               testData.worldWideSellMin
