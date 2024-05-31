@@ -304,7 +304,7 @@ export class IMDBPersonDetailsResolver implements IPersonDetailsResolver {
     }
     const $ = this.mediaIndexPageCheerio;
     const images: IImageDetails[] = [];
-    $("#media_index_thumbnail_grid a img").each((i, el) => {
+    $(".image-item-wrapper img.ipc-image").each((i, el) => {
       images.push(
         this.extractImageFullDetailsFromImgElement($(el), ImageType.Other)
       );
