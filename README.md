@@ -8,6 +8,10 @@
 [![License](https://img.shields.io/badge/License-MIT-green)](#license)
 [![issues - movier](https://img.shields.io/github/issues/Zoha/movier)](https://github.com/Zoha/movier/issues)
 
+# This package is no longer maintained and has been archived.
+
+No further updates, fixes, or support will be provided. Feel free to fork the repository if you want to continue development.
+
 # Movier
 
 with movier package, you can get movie titles information from IMDB like name, dates, casts, images, and all other details that you will need in your Nodejs app
